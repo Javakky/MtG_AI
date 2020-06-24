@@ -6,7 +6,9 @@ from util.util import assert_instanceof
 
 class Hand:
     C = TypeVar('C', bound=Card)
-    cards: List[Card] = []
+
+    def __init__(self):
+        self.cards: List[Card] = []
 
     def append(self, card: Card):
         self.cards.append(card)

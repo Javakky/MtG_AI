@@ -43,9 +43,10 @@ class IUser(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def combat_damage(self, attacker: int, result: Dict):
+    def combat_damage(self, result: Dict):
         raise NotImplementedError
 
+    @abstractmethod
     def assign_damage(self, attacker: int, blockers: List[int]):
         raise NotImplementedError
 

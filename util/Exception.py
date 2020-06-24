@@ -4,3 +4,7 @@ class IllegalManaException(Exception):
 
 class IllegalDamagePointsException(Exception):
     pass
+
+
+class IllegalPlayLandException(Exception):
+    pass

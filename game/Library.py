@@ -5,10 +5,9 @@ from game.card.Card import *
 
 
 class Library:
-    cards: List[Card]
 
     def __init__(self, deck: List[Card]):
-        self.cards = deck
+        self.cards: List[Card] = deck
 
     def pop(self) -> Optional[Card]:
         if len(self.cards) < 1:

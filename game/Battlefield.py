@@ -6,7 +6,9 @@ from util.util import assert_instanceof
 
 class Battlefield:
     P = TypeVar('P', bound=Permanent)
-    permanents: List[Permanent]
+
+    def __init__(self):
+        self.permanents: List[Permanent] = []
 
     def append(self, permanent: Permanent):
         self.permanents.append(permanent)
@@ -50,4 +52,11 @@ class Battlefield:
         for permanent in self.permanents:
             if isinstance(permanent, type):
                 result.append(permanent)
+        return result
+
+    def get_cards(self, type: Type[P] = Permanent) -> List[P]:
+        result: List[Battlefield.P] = []
+        for card in self.permanents:
+            if isinstance(card, type):
+                result.append(card)
         return result

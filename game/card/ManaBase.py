@@ -1,11 +1,14 @@
+from abc import ABCMeta
 from typing import Optional
 
 from game.card.Permanent import Permanent
 from game.mana.Mana import Mana
 
 
-class ManaBase(Permanent):
-    mana: Mana
+class ManaBase(Permanent, metaclass=ABCMeta):
+    def __init__(self):
+        super().__init__()
+        self.mana: Mana
 
     def addable_symbols(self) -> Mana:
         return self.mana
