@@ -11,8 +11,9 @@ class Mana:
             result = result + "(" + symbol.value + ")"
         return result
 
-    def __init__(self, symbols: List[Color]):
+    def __init__(self, symbols: List[Color] = [], num: int = 0):
         self.symbols: List[Color] = symbols
+        self.symbols.extend([Color.COLORLESS for i in range(num)])
 
     def extend(self, manas):
         self.symbols.extend(manas.symbols)
@@ -25,11 +26,11 @@ class Mana:
     def contains(self, mana) -> bool:
         colorless: int = 0
         for color in Color:
-            if color != Color.Colorless:
+            if color != Color.COLORLESS:
                 c = self.count(color) - mana.count(color)
                 if c < 0:
                     return False
                 colorless += c
-        if self.count(Color.Colorless) + colorless - mana.count(Color.Colorless):
+        if self.count(Color.COLORLESS) + colorless - mana.count(Color.COLORLESS):
             return False
         return True

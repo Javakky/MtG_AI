@@ -21,9 +21,9 @@ class UserClient(IUser):
     def get_deck(self) -> List[Card]:
         deck: List[Card] = []
         for i in range(23):
-            deck.append(Creature("真珠三叉矛の人魚", Mana([Color.Blue]), ["マーフォーク"], 1, 1))
+            deck.append(Creature("真珠三叉矛の人魚", Mana([Color.BLUE]), ["マーフォーク"], 1, 1))
         for i in range(17):
-            deck.append(Land("島", Mana([Color.Blue])))
+            deck.append(Land("島", Mana([Color.BLUE])))
         return deck
 
     def choose_play_first(self):

@@ -2,9 +2,9 @@ from enum import Enum
 
 
 class Color(Enum):
-    White = "W"
-    Blue = "U"
-    Black = "B"
-    Red = "R"
-    Green = "G"
-    Colorless = "C"
+    WHITE = "W"
+    BLUE = "U"
+    BLACK = "B"
+    RED = "R"
+    GREEN = "G"
+    COLORLESS = "C"

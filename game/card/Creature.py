@@ -1,5 +1,6 @@
 from typing import List
 
+from game.card.CardType import CardType
 from game.card.Permanent import Permanent
 from game.card.Spell import Spell
 from game.mana.Mana import Mana
@@ -14,10 +15,10 @@ class Creature(Permanent, Spell):
         self.power: int = power
         self.toughness: int = toughness
 
-    def type(self):
-        return "Creature"
+    def type(self) -> CardType:
+        return CardType.CREATURE
 
     def __str__(self) -> str:
-        return "【" + self.name + "】" + " " + self.type() + "：　" + \
+        return "【" + self.name + "】" + " " + self.type().value + "：　" + \
                str(self.power) + "/" + str(self.toughness) + " (" + self.mana_cost.__str__() + ")" + \
                (" (T)" if not self.untapped else "")
