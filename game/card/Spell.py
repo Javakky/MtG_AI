@@ -7,8 +7,8 @@ from game.mana.Mana import Mana
 
 class Spell(Card, metaclass=ABCMeta):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name: str):
+        super().__init__(name)
         self.mana_cost: Optional[Mana] = None
 
     def legal_mana_cost(self, mana: Mana) -> bool:

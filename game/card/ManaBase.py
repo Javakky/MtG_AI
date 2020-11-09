@@ -6,9 +6,9 @@ from game.mana.Mana import Mana
 
 
 class ManaBase(Permanent, metaclass=ABCMeta):
-    def __init__(self):
-        super().__init__()
-        self.mana: Mana
+    def __init__(self, name: str, mana: Mana):
+        super().__init__(name)
+        self.mana: Mana = mana
 
     def addable_symbols(self) -> Mana:
         return self.mana

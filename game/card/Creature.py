@@ -8,8 +8,7 @@ from game.mana.Mana import Mana
 class Creature(Permanent, Spell):
 
     def __init__(self, name: str, cost: Mana, creature_type: List[str], power: int, toughness: int):
-        super().__init__()
-        self.name = name
+        super().__init__(name)
         self.mana_cost = cost
         self.creature_type: List[str] = creature_type
         self.power: int = power

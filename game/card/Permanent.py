@@ -5,8 +5,8 @@ from game.card.Card import Card
 
 class Permanent(Card, metaclass=ABCMeta):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name: str):
+        super().__init__(name)
         self.untapped: bool = True
 
     def tap(self):

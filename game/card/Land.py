@@ -5,9 +5,7 @@ from game.mana.Mana import Mana
 class Land(ManaBase):
 
     def __init__(self, name: str, mana: Mana):
-        super().__init__()
-        self.name = name
-        self.mana = mana
+        super().__init__(name, mana)
 
     def type(self):
         return "Land"
