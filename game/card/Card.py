@@ -10,3 +10,7 @@ class Card(metaclass=ABCMeta):
     @abstractmethod
     def type(self) -> CardType:
         raise NotImplementedError
+
+    @abstractmethod
+    def clone(self) -> 'Card':
+        raise NotImplementedError

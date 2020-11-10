@@ -15,3 +15,6 @@ class Land(ManaBase):
         return "【" + self.name + "】" + " " + self.type().value + "： " + \
                self.mana.__str__() + \
                (" (T)" if not self.untapped else "")
+
+    def clone(self) -> 'Land':
+        return Land(self.name, self.mana.clone())

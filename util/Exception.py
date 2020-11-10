@@ -8,3 +8,7 @@ class IllegalDamagePointsException(Exception):
 
 class IllegalPlayLandException(Exception):
     pass
+
+
+class IllegalNumberException(Exception):
+    pass

@@ -1,3 +1,4 @@
+import copy
 from typing import List
 
 from game.card.CardType import CardType
@@ -22,3 +23,7 @@ class Creature(Permanent, Spell):
         return "【" + self.name + "】" + " " + self.type().value + "：　" + \
                str(self.power) + "/" + str(self.toughness) + " (" + self.mana_cost.__str__() + ")" + \
                (" (T)" if not self.untapped else "")
+
+    def clone(self) -> 'Creature':
+        return Creature(self.name, self.mana_cost.clone(), copy.deepcopy(self.creature_type), self.power,
+                        self.toughness)

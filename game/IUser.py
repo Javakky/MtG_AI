@@ -7,7 +7,7 @@ from game.card.Card import Card
 class IUser(metaclass=ABCMeta):
 
     @abstractmethod
-    def get_deck(self):
+    def get_deck(self) -> List[Card]:
         raise NotImplementedError
 
     @abstractmethod

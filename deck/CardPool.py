@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from game.card.Card import Card
 from game.card.CardType import CardType
@@ -6,12 +6,24 @@ from game.card.Creature import Creature
 from game.card.Land import Land
 from game.mana.Color import Color
 from game.mana.Mana import Mana
+from util.Exception import IllegalNumberException
 
 
 class CardPool:
-    pool: Dict[str, Card]
-    creatures: List[Card]
-    lands: List[Card]
+    def __init__(self):
+        self.pool: Dict[str, Card] = {}
+        self.creatures: List[Card] = []
+        self.lands: List[Card] = []
+
+    def get_card(self, name: str, num: int = 1) -> Union[Card, List[Card]]:
+        if num < 1:
+            raise IllegalNumberException()
+        if num == 1:
+            return self.pool[name].clone()
+        cards: List[Card] = []
+        for i in range(num):
+            cards.append(self.pool[name].clone())
+        return cards
 
     def add_card(self, value: Card):
         self.pool[value.name] = value

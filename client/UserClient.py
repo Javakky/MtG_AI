@@ -1,12 +1,11 @@
 from typing import List, Dict
 
+from deck.DeckList import get_sample_deck
 from game.Game import Game
 from game.IUser import IUser
 from game.card.Card import Card
 from game.card.Creature import Creature
 from game.card.Land import Land
-from game.mana.Color import Color
-from game.mana.Mana import Mana
 
 
 class UserClient(IUser):
@@ -19,12 +18,7 @@ class UserClient(IUser):
         self.name = name
 
     def get_deck(self) -> List[Card]:
-        deck: List[Card] = []
-        for i in range(23):
-            deck.append(Creature("真珠三叉矛の人魚", Mana([Color.BLUE]), ["マーフォーク"], 1, 1))
-        for i in range(17):
-            deck.append(Land("島", Mana([Color.BLUE])))
-        return deck
+        return get_sample_deck()
 
     def choose_play_first(self):
         self.game.choose_play_first(self, True)
@@ -71,9 +65,11 @@ class UserClient(IUser):
         print("【" + self.name + "】が優先です：")
         print("1. カードのプレイ")
         print("2. 手札の確認")
-        print("3. 優先権の放棄")
+        print("3. 手札の確認")
+        print("4. 手札の確認")
+        print("5. 優先権の放棄")
         choosen: int = int(input())
-        if not 1 <= choosen <= 3:
+        if not 1 <= choosen <= 5:
             print("選択された番号は存在しません")
         elif choosen == 1:
             print("プレイするカードを選択：")
@@ -115,6 +111,10 @@ class UserClient(IUser):
             self.print_hand()
             self.recieve_priority()
         elif choosen == 3:
+            self.print_field(True)
+        elif choosen == 4:
+            self.print_field(False)
+        elif choosen == 5:
             self.game.pass_priority()
 
     def declare_attackers_step(self):

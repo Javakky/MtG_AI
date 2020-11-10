@@ -11,7 +11,9 @@ class Mana:
             result = result + "(" + symbol.value + ")"
         return result
 
-    def __init__(self, symbols: List[Color] = [], num: int = 0):
+    def __init__(self, symbols=None, num: int = 0):
+        if symbols is None:
+            symbols = []
         self.symbols: List[Color] = symbols
         self.symbols.extend([Color.COLORLESS for i in range(num)])
 
@@ -34,3 +36,6 @@ class Mana:
         if self.count(Color.COLORLESS) + colorless - mana.count(Color.COLORLESS):
             return False
         return True
+
+    def clone(self) -> 'Mana':
+        return Mana(self.symbols)
