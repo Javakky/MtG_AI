@@ -7,8 +7,14 @@ class Mana:
 
     def __str__(self) -> str:
         result: str = ""
+        colorless: int = 0
         for symbol in self.symbols:
-            result = result + "(" + symbol.value + ")"
+            if symbol == Color.COLORLESS:
+                colorless += 1
+            else:
+                result += "(" + symbol.value + ")"
+        if colorless > 0:
+            result += "(" + str(colorless) + ")"
         return result
 
     def __init__(self, symbols=None, num: int = 0):

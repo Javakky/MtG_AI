@@ -84,7 +84,8 @@ class Game:
         self.active_user.upkeep_step()
         if self.turn > 1:
             self.draw_step()
-        self.active_user.declare_attackers_step()
+        else:
+            self.finish_main_phase()
 
     def untap_step(self):
         self.active_player().untap_all()
@@ -94,6 +95,9 @@ class Game:
         if not card:
             self.ending_the_game(self.non_active_users()[0])
         self.active_user.draw_step(card)
+
+    def finish_main_phase(self):
+        self.active_user.declare_attackers_step()
 
     def declare_attackers(self, indexes: List[int]):
         if len(indexes) < 1:
@@ -176,6 +180,9 @@ class Game:
     def play_land(self, index: int):
         self.active_player().play_land(index)
         self.active_user.receive_priority()
+
+    def played_land(self):
+        return self.active_player().played_land
 
     def cast_pay_cost(self, spell_index: int, mana_indexes: List[int]):
         self.active_player().cast_pay_cost(spell_index, mana_indexes)

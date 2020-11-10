@@ -4,7 +4,6 @@ from client.console_user import ConsoleUser, print_cards
 from deck.deck_list import get_sample_deck
 from games.cards.card import Card
 from games.cards.card_type import CardType
-from games.cards.creature import Creature
 from games.game import Game
 
 
@@ -20,7 +19,9 @@ class Expert(ConsoleUser):
         self.game.choose_play_first(self, True)
 
     def draw_starting_hand(self, hands: List[Card]):
-        pass
+        print("【" + self.name + "】の初期手札 " + str(len(hands)) + "枚：")
+        print_cards(hands)
+        print()
 
     def chosen_play_first(self, play_first: bool):
         pass
@@ -30,6 +31,7 @@ class Expert(ConsoleUser):
 
     def draw_step(self, card: Card):
         self.print_hand()
+        self.game.finish_main_phase()
 
     def combat_damage(self, result: Dict):
         pass
@@ -39,19 +41,16 @@ class Expert(ConsoleUser):
 
     def receive_priority(self):
         hands: List[Card] = self.game.get_hands(self)
-        for i in range(hands.__len__()):
-            if hands[i].has_type(CardType.LAND):
-                hands.pop(i)
-                self.game.play_land(i)
-                print("【" + self.name + "】が土地をプレイしました：")
-                self.print_field()
-                print()
-                break
-        hands = self.game.get_hands(self, Creature)
-        print(print_cards(hands))
+        if not self.game.played_land():
+            for i in range(hands.__len__()):
+                if hands[i].has_type(CardType.LAND):
+                    self.game.play_land(i)
+                    print("【" + self.name + "】が土地をプレイしました：")
+                    self.print_field()
+                    break
 
     def declare_attackers_step(self):
-        pass
+        self.game.declare_attackers([])
 
     def declare_blockers_step(self, attackers: List[int]):
         pass

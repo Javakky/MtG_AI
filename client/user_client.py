@@ -39,13 +39,14 @@ class UserClient(ConsoleUser):
     def draw_step(self, card: Card):
         print("【" + self.name + "】のドロー：")
         print("\t" + card.__str__())
+        self.game.finish_main_phase()
 
     def receive_priority(self):
         print("【" + self.name + "】が優先です：")
         print("1. カードのプレイ")
         print("2. 手札の確認")
-        print("3. 手札の確認")
-        print("4. 手札の確認")
+        print("3. 自分の戦場の確認")
+        print("4. 相手の戦場確認")
         print("5. 優先権の放棄")
         choosen: int = int(input())
         if not 1 <= choosen <= 5:
