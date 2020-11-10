@@ -1,13 +1,13 @@
+from ai.expert import Expert
 from client.user_client import UserClient
 from games.game import Game
 
 
 def main():
     game: Game = Game()
-    print("一人目のユーザー名を入力してください")
+    print("ユーザー名を入力してください")
     user1 = UserClient(game, input())
-    print("二人目のユーザー名を入力してください")
-    user2 = UserClient(game, input())
+    user2 = Expert(game, "ai")
     game.starting_the_game()
 
 

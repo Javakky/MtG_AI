@@ -1,17 +1,18 @@
-from game.Battlefield import *
-from game.Graveyard import *
-from game.Hand import *
-from game.Library import *
-from game.card.Creature import Creature
-from game.card.Land import Land
-from game.card.ManaBase import ManaBase
-from game.card.Spell import Spell
-from game.mana.Mana import Mana
+from games.battlefield import *
+from games.cards.creature import Creature
+from games.cards.land import Land
+from games.cards.mana_base import ManaBase
+from games.cards.spell import Spell
+from games.graveyard import *
+from games.hand import *
+from games.library import *
+from games.mana.mana import Mana
 from util.Exception import IllegalManaException, IllegalPlayLandException
 
 
 class Player:
     P = TypeVar('P', bound=Permanent)
+    C = TypeVar('C', bound=Card)
 
     def __init__(self, deck: List[Card]):
         self.hand: Hand = Hand()
@@ -80,8 +81,8 @@ class Player:
         self.graveyard.append(tmp)
         return tmp
 
-    def get_hands(self) -> List[Card]:
-        return self.hand.cards
+    def get_hands(self, type: Type[C] = Card) -> List[C]:
+        return self.hand.get_all(type)
 
     def get_hand(self, index: int, type: Type[P] = Permanent) -> P:
         return self.hand.get(index, type)

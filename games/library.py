@@ -1,7 +1,7 @@
 import random
 from typing import List, Optional
 
-from game.card.Card import *
+from games.cards.card import *
 
 
 class Library:

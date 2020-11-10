@@ -1,16 +1,18 @@
 from random import choice
-from typing import Dict, List, Type, TypeVar
+from typing import Dict, List, Type, TypeVar, TYPE_CHECKING
 
-from game.IUser import IUser
-from game.Player import Player
-from game.card.Card import Card
-from game.card.Creature import Creature
-from game.card.Permanent import Permanent
+if TYPE_CHECKING:
+    from games.i_user import IUser
+from games.cards.card import Card
+from games.cards.creature import Creature
+from games.cards.permanent import Permanent
+from games.player import Player
 from util.Exception import IllegalDamagePointsException
 
 
 class Game:
     P = TypeVar('P', bound=Permanent)
+    C = TypeVar('C', bound=Card)
 
     def __init__(self):
         self.players: Dict[IUser, Player] = {}
@@ -20,7 +22,7 @@ class Game:
         self.tmp_blocker: Dict[int, List[int]]
         self.turn: int = 0
 
-    def set_user(self, user: IUser):
+    def set_user(self, user):
         self.players[user] = Player(user.get_deck())
 
     def active_player(self) -> Player:
@@ -35,7 +37,7 @@ class Game:
             raise Exception
         return players
 
-    def non_self_users(self, self1: IUser) -> List[IUser]:
+    def non_self_users(self, self1) -> List:
         users: List[IUser] = []
         for k in self.players.keys():
             if k != self1:
@@ -44,10 +46,10 @@ class Game:
             raise Exception
         return users
 
-    def non_active_users(self) -> List[IUser]:
+    def non_active_users(self) -> List:
         return self.other_users(self.active_user)
 
-    def other_users(self, user) -> List[IUser]:
+    def other_users(self, user) -> List:
         others: List[IUser] = []
         for k in self.players.keys():
             if k != user:
@@ -60,7 +62,7 @@ class Game:
         choose_player: IUser = choice(list(self.players.keys()))
         choose_player.choose_play_first()
 
-    def choose_play_first(self, user: IUser, play_first: bool):
+    def choose_play_first(self, user, play_first: bool):
         if play_first:
             self.play_first = user
             self.active_user = user
@@ -169,15 +171,15 @@ class Game:
             self.main_phase()
 
     def main_phase(self):
-        self.active_user.recieve_priority()
+        self.active_user.receive_priority()
 
     def play_land(self, index: int):
         self.active_player().play_land(index)
-        self.active_user.recieve_priority()
+        self.active_user.receive_priority()
 
     def cast_pay_cost(self, spell_index: int, mana_indexes: List[int]):
         self.active_player().cast_pay_cost(spell_index, mana_indexes)
-        self.active_user.recieve_priority()
+        self.active_user.receive_priority()
 
     def pass_priority(self):
         self.ending_phase()
@@ -186,19 +188,19 @@ class Game:
         self.active_user = self.non_active_users()[0]
         self.start_phase()
 
-    def ending_the_game(self, winner: IUser):
+    def ending_the_game(self, winner):
         winner.ending_the_game(True)
         for user in self.other_users(winner):
             user.ending_the_game(False)
 
-    def get_hands(self, user: IUser) -> List[Card]:
-        return self.players[user].hand.cards
+    def get_hands(self, user, type: Type[C] = Card) -> List[C]:
+        return self.players[user].get_hands(type)
 
-    def get_hand(self, user: IUser, index: int, type: Type[P] = Permanent) -> P:
+    def get_hand(self, user, index: int, type: Type[P] = Permanent) -> P:
         return self.players[user].get_hand(index, type)
 
-    def get_field(self, user: IUser, index: int, type: Type[P] = Permanent) -> P:
+    def get_field(self, user, index: int, type: Type[P] = Permanent) -> P:
         return self.players[user].get_field(index, type)
 
-    def get_fields(self, user: IUser, type: Type[P] = Permanent) -> List[P]:
+    def get_fields(self, user, type: Type[P] = Permanent) -> List[P]:
         return self.players[user].field.get_cards(type)

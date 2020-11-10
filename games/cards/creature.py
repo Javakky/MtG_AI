@@ -1,13 +1,16 @@
 import copy
 from typing import List
 
-from game.card.CardType import CardType
-from game.card.Permanent import Permanent
-from game.card.Spell import Spell
-from game.mana.Mana import Mana
+from games.cards.card_type import CardType
+from games.cards.permanent import Permanent
+from games.cards.spell import Spell
+from games.mana.mana import Mana
 
 
 class Creature(Permanent, Spell):
+
+    def has_type(self, card_type: CardType) -> bool:
+        return card_type == self.type()
 
     def __init__(self, name: str, cost: Mana, creature_type: List[str], power: int, toughness: int):
         super().__init__(name)

@@ -1,6 +1,6 @@
 from typing import List, Type, TypeVar
 
-from game.card.Card import Card
+from games.cards.card import Card
 from util.util import assert_instanceof
 
 
@@ -20,3 +20,13 @@ class Hand:
     def get(self, index: int, type: Type[C] = Card) -> C:
         assert_instanceof(self.cards[index], type)
         return self.cards[index]
+
+    def get_all(self, type: Type[C] = Card) -> List[C]:
+        result: List[type] = []
+        hands: List[Card] = self.cards
+        if type == Card:
+            return hands
+        for c in hands:
+            if isinstance(c, type):
+                result.append(c)
+        return result

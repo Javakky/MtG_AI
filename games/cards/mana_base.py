@@ -1,8 +1,8 @@
 from abc import ABCMeta
 from typing import Optional
 
-from game.card.Permanent import Permanent
-from game.mana.Mana import Mana
+from games.cards.permanent import Permanent
+from games.mana.mana import Mana
 
 
 class ManaBase(Permanent, metaclass=ABCMeta):

@@ -1,6 +1,6 @@
 from typing import List
 
-from game.card.Card import Card
+from games.cards.card import Card
 
 
 class Graveyard:

@@ -1,7 +1,7 @@
 from typing import List
 
-from deck.CardPool import CARD_POOL
-from game.card.Card import Card
+from deck.card_pool import CARD_POOL
+from games.cards.card import Card
 from util.util import flatten
 
 

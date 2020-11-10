@@ -1,11 +1,11 @@
 from typing import Dict, List, Union
 
-from game.card.Card import Card
-from game.card.CardType import CardType
-from game.card.Creature import Creature
-from game.card.Land import Land
-from game.mana.Color import Color
-from game.mana.Mana import Mana
+from games.cards.card import Card
+from games.cards.card_type import CardType
+from games.cards.creature import Creature
+from games.cards.land import Land
+from games.mana.color import Color
+from games.mana.mana import Mana
 from util.Exception import IllegalNumberException
 
 

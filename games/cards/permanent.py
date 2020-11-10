@@ -1,6 +1,6 @@
 from abc import ABCMeta
 
-from game.card.Card import Card
+from games.cards.card import Card
 
 
 class Permanent(Card, metaclass=ABCMeta):

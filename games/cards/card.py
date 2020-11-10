@@ -1,11 +1,15 @@
 from abc import ABCMeta, abstractmethod
 
-from game.card.CardType import CardType
+from games.cards.card_type import CardType
 
 
 class Card(metaclass=ABCMeta):
     def __init__(self, name: str):
         self.name: str = name
+
+    @abstractmethod
+    def has_type(self, card_type: CardType) -> bool:
+        raise NotImplementedError
 
     @abstractmethod
     def type(self) -> CardType:

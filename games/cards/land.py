@@ -1,9 +1,12 @@
-from game.card.CardType import CardType
-from game.card.ManaBase import ManaBase
-from game.mana.Mana import Mana
+from games.cards.card_type import CardType
+from games.cards.mana_base import ManaBase
+from games.mana.mana import Mana
 
 
 class Land(ManaBase):
+
+    def has_type(self, card_type: CardType) -> bool:
+        return card_type == self.type()
 
     def __init__(self, name: str, mana: Mana):
         super().__init__(name, mana)

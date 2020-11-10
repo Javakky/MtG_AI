@@ -1,10 +1,18 @@
 from abc import *
-from typing import List, Dict
+from typing import List, Dict, TYPE_CHECKING
 
-from game.card.Card import Card
+from games.cards.card import Card
+
+if TYPE_CHECKING:
+    from games.game import Game
 
 
 class IUser(metaclass=ABCMeta):
+
+    def __init__(self, game, name: str):
+        self.game: Game = game
+        self.game.set_user(self)
+        self.name: str = name
 
     @abstractmethod
     def get_deck(self) -> List[Card]:
@@ -31,7 +39,7 @@ class IUser(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def recieve_priority(self):
+    def receive_priority(self):
         raise NotImplementedError
 
     @abstractmethod

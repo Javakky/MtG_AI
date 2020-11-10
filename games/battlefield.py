@@ -1,6 +1,6 @@
 from typing import List, Type, TypeVar, Union
 
-from game.card.Permanent import Permanent
+from games.cards.permanent import Permanent
 from util.util import assert_instanceof
 
 

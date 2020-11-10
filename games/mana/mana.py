@@ -1,6 +1,6 @@
 from typing import List
 
-from game.mana.Color import Color
+from games.mana.color import Color
 
 
 class Mana:

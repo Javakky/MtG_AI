@@ -1,21 +1,17 @@
 from typing import List, Dict
 
-from deck.DeckList import get_sample_deck
-from game.Game import Game
-from game.IUser import IUser
-from game.card.Card import Card
-from game.card.Creature import Creature
-from game.card.Land import Land
+from client.console_user import ConsoleUser, print_cards
+from deck.deck_list import get_sample_deck
+from games.cards.card import Card
+from games.cards.creature import Creature
+from games.cards.land import Land
+from games.game import Game
 
 
-class UserClient(IUser):
-    game: Game
-    name: str
+class UserClient(ConsoleUser):
 
     def __init__(self, game: Game, name: str):
-        self.game = game
-        self.game.set_user(self)
-        self.name = name
+        super().__init__(game, name)
 
     def get_deck(self) -> List[Card]:
         return get_sample_deck()
@@ -33,25 +29,8 @@ class UserClient(IUser):
 
     def draw_starting_hand(self, hands: List[Card]):
         print("【" + self.name + "】の初期手札 " + str(len(hands)) + "枚：")
-        self.print_cards(hands)
+        print_cards(hands)
         print()
-
-    def print_hand(self):
-        print("【" + self.name + "】の手札：")
-        self.print_cards(self.game.get_hands(self))
-        print()
-
-    def print_field(self, myself: bool = True):
-        print("【" + (self.name if myself else "相手") + "】の戦場：")
-        if myself:
-            self.print_cards(self.game.get_fields(self))
-        else:
-            self.print_cards(self.game.get_fields(self.game.non_self_users(self)[0]))
-        print()
-
-    def print_cards(self, cards: List[Card]):
-        for card in cards:
-            print("\t" + card.__str__())
 
     def upkeep_step(self):
         print("【" + self.name + "】のターンです")
@@ -61,7 +40,7 @@ class UserClient(IUser):
         print("【" + self.name + "】のドロー：")
         print("\t" + card.__str__())
 
-    def recieve_priority(self):
+    def receive_priority(self):
         print("【" + self.name + "】が優先です：")
         print("1. カードのプレイ")
         print("2. 手札の確認")
@@ -105,15 +84,17 @@ class UserClient(IUser):
                     elif choosen == 2:
                         self.print_field(True)
                     elif choosen == 3:
-                        self.recieve_priority()
+                        self.receive_priority()
                         break
         elif choosen == 2:
             self.print_hand()
-            self.recieve_priority()
+            self.receive_priority()
         elif choosen == 3:
             self.print_field(True)
+            self.receive_priority()
         elif choosen == 4:
             self.print_field(False)
+            self.receive_priority()
         elif choosen == 5:
             self.game.pass_priority()
 

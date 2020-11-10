@@ -1,8 +1,8 @@
 from abc import ABCMeta
 from typing import Optional
 
-from game.card.Card import Card
-from game.mana.Mana import Mana
+from games.cards.card import Card
+from games.mana.mana import Mana
 
 
 class Spell(Card, metaclass=ABCMeta):
