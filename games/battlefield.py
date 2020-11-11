@@ -1,6 +1,8 @@
 from typing import List, Type, TypeVar, Union
 
+from games.cards.mana_base import ManaBase
 from games.cards.permanent import Permanent
+from games.mana.mana import Mana
 from util.util import assert_instanceof
 
 
@@ -44,19 +46,18 @@ class Battlefield:
         assert_instanceof(self.permanents[index], type)
         return self.permanents.pop(index)
 
-    def get_all(self, type: Type[P] = Permanent) -> List[P]:
+    def get_cards(self, type: Type[P] = Permanent) -> List[P]:
         if type == Permanent:
             return self.permanents
-
-        result = []
-        for permanent in self.permanents:
-            if isinstance(permanent, type):
-                result.append(permanent)
-        return result
-
-    def get_cards(self, type: Type[P] = Permanent) -> List[P]:
         result: List[Battlefield.P] = []
         for card in self.permanents:
             if isinstance(card, type):
                 result.append(card)
         return result
+
+    def get_remain_mana(self) -> Mana:
+        mana: Mana = Mana()
+        for permanent in self.get_cards(ManaBase):
+            if isinstance(permanent, ManaBase) and permanent.untapped:
+                mana = mana.extend(permanent.mana)
+        return mana

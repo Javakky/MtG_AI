@@ -23,8 +23,8 @@ class Mana:
         self.symbols: List[Color] = symbols
         self.symbols.extend([Color.COLORLESS for i in range(num)])
 
-    def extend(self, manas):
-        self.symbols.extend(manas.symbols)
+    def extend(self, manas: 'Mana') -> 'Mana':
+        return Mana(self.symbols + manas.symbols)
 
     def count(self, color: Color = None):
         if color:
@@ -39,7 +39,7 @@ class Mana:
                 if c < 0:
                     return False
                 colorless += c
-        if self.count(Color.COLORLESS) + colorless - mana.count(Color.COLORLESS):
+        if self.count(Color.COLORLESS) + colorless - mana.count(Color.COLORLESS) < 0:
             return False
         return True
 

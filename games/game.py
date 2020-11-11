@@ -1,5 +1,5 @@
 from random import choice
-from typing import Dict, List, Type, TypeVar, TYPE_CHECKING
+from typing import Dict, List, Type, TypeVar, TYPE_CHECKING, Tuple
 
 if TYPE_CHECKING:
     from games.i_user import IUser
@@ -7,6 +7,7 @@ from games.cards.card import Card
 from games.cards.creature import Creature
 from games.cards.permanent import Permanent
 from games.player import Player
+from games.mana.mana import Mana
 from util.Exception import IllegalDamagePointsException
 
 
@@ -211,3 +212,22 @@ class Game:
 
     def get_fields(self, user, type: Type[P] = Permanent) -> List[P]:
         return self.players[user].field.get_cards(type)
+
+    def get_indexed_fields(self, user, type: Type[P]) -> List[Tuple[int, P]]:
+        cards: List[Permanent] = self.get_fields(user)
+        result: List[Tuple[int, P]] = []
+        for i in range(cards.__len__()):
+            if isinstance(cards[i], type):
+                result.append((i, cards[i]))
+        return result
+
+    def get_indexed_hands(self, user, type: Type[P]) -> List[Tuple[int, P]]:
+        cards: List[Permanent] = self.get_hands(user)
+        result: List[Tuple[int, P]] = []
+        for i in range(cards.__len__()):
+            if isinstance(cards[i], type):
+                result.append((i, cards[i]))
+        return result
+
+    def get_remain_mana(self) -> Mana:
+        return self.players[self.active_user].get_remain_mana()
