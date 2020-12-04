@@ -1,6 +1,7 @@
-from typing import TypeVar, Type, List
+from typing import TypeVar, Type, List, Tuple
 
 T = TypeVar('T', bound=object)
+DEBUG = True
 
 
 def assert_instanceof(__o: object, __t: Type[T]):
@@ -16,3 +17,16 @@ def flatten(list: List[T]):
         else:
             result.append(element)
     return result
+
+
+def debug_print(str: str = ""):
+    if DEBUG:
+        print(str)
+
+
+def get_keys_tuple_list(list: List[Tuple[T, object]]) -> List[T]:
+    return [tpl[0] for tpl in list]
+
+
+def get_values_tuple_list(list: List[Tuple[object, T]]) -> List[T]:
+    return [tpl[1] for tpl in list]
