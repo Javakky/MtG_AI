@@ -30,3 +30,10 @@ def get_keys_tuple_list(list: List[Tuple[T, object]]) -> List[T]:
 
 def get_values_tuple_list(list: List[Tuple[object, T]]) -> List[T]:
     return [tpl[1] for tpl in list]
+
+
+def index_with_default(l, x, default=False):
+    if x in l:
+        return l.index(x)
+    else:
+        return default
