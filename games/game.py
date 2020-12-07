@@ -117,7 +117,9 @@ class Game:
 
     def combat_damage(self):
         attacker = self.active_player().get_field(self.tmp_attacker[0], Creature)
-        blockers = self.non_active_player()[0].get_fields(self.tmp_blocker[self.tmp_attacker[0]], Creature)
+        blockers = self.non_active_player()[0].get_fields(
+            self.tmp_blocker[self.tmp_attacker[0]] if self.tmp_blocker[self.tmp_attacker[0]] is not None else [],
+            Creature)
         result: Dict = {"damage": 0, "destroy": {"attacker": None, "blocker": []}}
 
         if len(blockers) < 1:
@@ -210,14 +212,15 @@ class Game:
     def get_field(self, user, index: int, type: Type[P] = Permanent) -> P:
         return self.players[user].get_field(index, type)
 
-    def get_fields(self, user, type: Type[P] = Permanent) -> List[P]:
-        return self.players[user].field.get_cards(type)
+    def get_fields(self, user, untapped: bool = None, type: Type[P] = Permanent) -> List[P]:
+        return self.players[user].field.get_cards(untapped, type)
 
-    def get_indexed_fields(self, user, type: Type[P]) -> List[Tuple[int, P]]:
+    def get_indexed_fields(self, user, untapped: bool = None, type: Type[P] = Permanent) -> List[Tuple[int, P]]:
         cards: List[Permanent] = self.get_fields(user)
         result: List[Tuple[int, P]] = []
         for i in range(cards.__len__()):
-            if isinstance(cards[i], type):
+            if isinstance(cards[i], type) and \
+                    (untapped is None or (cards[i].untapped == untapped)):
                 result.append((i, cards[i]))
         return result
 
@@ -231,3 +234,6 @@ class Game:
 
     def get_remain_mana(self) -> Mana:
         return self.players[self.active_user].get_remain_mana()
+
+    def get_life(self, user) -> int:
+        return self.players[user].get_life()

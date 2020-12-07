@@ -12,4 +12,4 @@ class Spell(Card, metaclass=ABCMeta):
         self.mana_cost: Optional[Mana] = None
 
     def legal_mana_cost(self, mana: Mana) -> bool:
-        return mana.contains(self.mana_cost)
+        return self.mana_cost in mana

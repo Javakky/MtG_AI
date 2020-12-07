@@ -100,7 +100,7 @@ class UserClient(ConsoleUser):
             self.game.pass_priority()
 
     def declare_attackers_step(self):
-        if len(self.game.get_fields(self, Creature)) < 1:
+        if len(self.game.get_fields(self, False, Creature)) < 1:
             self.game.declare_attackers([])
             return
         while True:

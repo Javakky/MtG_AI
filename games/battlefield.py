@@ -46,18 +46,25 @@ class Battlefield:
         assert_instanceof(self.permanents[index], type)
         return self.permanents.pop(index)
 
-    def get_cards(self, type: Type[P] = Permanent) -> List[P]:
+    def get_cards(self, untapped: bool = None, type: Type[P] = Permanent) -> List[P]:
+        result: List[Permanent] = []
         if type == Permanent:
-            return self.permanents
-        result: List[Battlefield.P] = []
-        for card in self.permanents:
-            if isinstance(card, type):
-                result.append(card)
+            result = self.permanents
+        else:
+            for card in self.permanents:
+                if isinstance(card, type):
+                    result.append(card)
+        if untapped is not None:
+            tmp = []
+            for c in result:
+                if c.untapped == untapped:
+                    tmp = c
+            result = tmp
         return result
 
     def get_remain_mana(self) -> Mana:
         mana: Mana = Mana()
-        for permanent in self.get_cards(ManaBase):
+        for permanent in self.get_cards(type=ManaBase):
             if isinstance(permanent, ManaBase) and permanent.untapped:
-                mana = mana.extend(permanent.mana)
+                mana += permanent.mana
         return mana

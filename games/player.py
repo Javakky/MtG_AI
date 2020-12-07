@@ -49,7 +49,7 @@ class Player:
             if not self.field.get(i, ManaBase).untapped:
                 raise IllegalManaException("このパーマネントは既にタップされています: "
                                            "[index => " + str(i) + ", name => " + self.field.get(i).name + "]")
-            mana_cost = mana_cost.extend(self.field.get(i, ManaBase).addable_symbols())
+            mana_cost += self.field.get(i, ManaBase).addable_symbols()
         if not self.hand.get(spell_index, Spell).legal_mana_cost(mana_cost):
             raise IllegalManaException("マナが足りません")
         for i in manabase_indexes:
@@ -105,3 +105,6 @@ class Player:
 
     def get_remain_mana(self) -> Mana:
         return self.field.get_remain_mana()
+
+    def get_life(self) -> int:
+        return self.life

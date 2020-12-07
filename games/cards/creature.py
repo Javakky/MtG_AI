@@ -1,5 +1,5 @@
 import copy
-from typing import List
+from typing import List, Set
 
 from games.cards.card_type import CardType
 from games.cards.permanent import Permanent
@@ -15,7 +15,7 @@ class Creature(Permanent, Spell):
     def __init__(self, name: str, cost: Mana, creature_type: List[str], power: int, toughness: int):
         super().__init__(name)
         self.mana_cost = cost
-        self.creature_type: List[str] = creature_type
+        self.creature_type: Set[str] = set(creature_type)
         self.power: int = power
         self.toughness: int = toughness
 
@@ -28,5 +28,5 @@ class Creature(Permanent, Spell):
                (" (T)" if not self.untapped else "")
 
     def clone(self) -> 'Creature':
-        return Creature(self.name, self.mana_cost.clone(), copy.deepcopy(self.creature_type), self.power,
+        return Creature(self.name, self.mana_cost.clone(), copy.deepcopy(list(self.creature_type)), self.power,
                         self.toughness)

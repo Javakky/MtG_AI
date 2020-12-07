@@ -1,3 +1,4 @@
+import re
 from typing import Dict, List, Union
 
 from games.cards.card import Card
@@ -18,11 +19,25 @@ class CardPool:
     def get_card(self, name: str, num: int = 1) -> Union[Card, List[Card]]:
         if num < 1:
             raise IllegalNumberException()
-        if num == 1:
-            return self.pool[name].clone()
         cards: List[Card] = []
+        target: Card
+        if name in self.pool:
+            target = self.pool[name]
+        else:
+            m = re.match("^([1-6])/([1-6])\\(([1-7])\\)$", name)
+            if not m:
+                return []
+            groups = m.groups()
+            if groups.__len__() != 3:
+                return []
+            target = Creature(name, Mana(num=int(groups[2])), [], int(groups[0]), int(groups[1]))
+            self.add_card(target.clone())
+
+        if num == 1:
+            return target.clone()
+
         for i in range(num):
-            cards.append(self.pool[name].clone())
+            cards.append(target.clone())
         return cards
 
     def add_card(self, value: Card):
