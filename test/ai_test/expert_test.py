@@ -4,7 +4,8 @@ from unittest import TestCase
 
 from ai.expert import exists_one_sidedly_destroied_pair, exists_exchanged_low_cost_pair, \
     exists_exchange_high_cost_next_turn, find_one_sidedly_destroied_smaller_cost_pair, find_exchanged_low_cost_creature, \
-    maximum_playable_creature_count_enough_land, count_smallest_pair_exceeds_my_life, find_exchanged_creature_pair
+    maximum_playable_creature_count_enough_land, count_smallest_pair_exceeds_my_life, find_exchanged_creature_pair, \
+    find_damage_destroyable_max_cost_assign
 from deck.card_pool import CARD_POOL
 from games.cards.creature import Creature
 from games.mana.mana import Mana
@@ -209,6 +210,20 @@ class ExpertTest(TestCase):
             )
         )
 
+    def test_find_damage_destroyable_max_cost_assign(self):
+        self.assertEqual(
+            [0, 0, 1, 2, 1],
+            find_damage_destroyable_max_cost_assign(
+                4,
+                flatten([
+                    (0, CARD_POOL.get_card("6/4(6)")),
+                    (1, CARD_POOL.get_card("1/1(1)")),
+                    (2, CARD_POOL.get_card("1/1(2)")),
+                    (3, CARD_POOL.get_card("3/2(3)")),
+                    (4, CARD_POOL.get_card("2/1(1)")),
+                ])
+            )
+        )
 
 if __name__ == "__main__":
     unittest.main()
