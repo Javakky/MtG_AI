@@ -99,7 +99,7 @@ class Player:
         return self.field.get(index, type)
 
     def get_fields(self, indexes: List[int] = None, type: Type[P] = Permanent) -> List[P]:
-        if indexes:
+        if indexes is None:
             return self.field.get_cards(type)
         return self.field.get(indexes, type)
 
@@ -108,3 +108,6 @@ class Player:
 
     def get_life(self) -> int:
         return self.life
+
+    def get_library_count(self) -> int:
+        return self.library.cards.__len__()

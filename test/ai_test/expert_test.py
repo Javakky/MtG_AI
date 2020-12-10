@@ -163,6 +163,19 @@ class ExpertTest(TestCase):
                 )
             )
         )
+        two_two_two: Creature = cast(Creature, CARD_POOL.get_card("2/2(2)"))
+        self.assertEqual(
+            {(2, two_two_two)},
+            set(
+                find_exchanged_low_cost_creature(
+                    cast(Creature, CARD_POOL.get_card("3/2(3)")),
+                    [
+                        (1, CARD_POOL.get_card("1/1(1)")),
+                        (2, two_two_two)
+                    ]
+                )
+            )
+        )
 
     def test_maximum_playable_creature_count_enough_land(self):
         self.assertEqual(
@@ -224,6 +237,7 @@ class ExpertTest(TestCase):
                 ])
             )
         )
+
 
 if __name__ == "__main__":
     unittest.main()

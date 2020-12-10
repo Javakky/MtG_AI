@@ -1,7 +1,9 @@
-from typing import TypeVar, Type, List, Tuple
+from typing import TypeVar, Type, List, Tuple, Union, Dict
+
+from games.cards.card import Card
 
 T = TypeVar('T', bound=object)
-DEBUG = True
+DEBUG = False
 
 
 def assert_instanceof(__o: object, __t: Type[T]):
@@ -19,7 +21,7 @@ def flatten(list: List[T]):
     return result
 
 
-def debug_print(str: str = ""):
+def debug_print(str: Union[str, Union[Exception, Dict[str]]] = ""):
     if DEBUG:
         print(str)
 
@@ -37,3 +39,23 @@ def index_with_default(l, x, default=False):
         return l.index(x)
     else:
         return default
+
+
+def print_cards(cards: List[Card]):
+    for card in cards:
+        print("\t" + card.__str__())
+
+
+def print_cards_of_index(tuples: List[Tuple[int, Card]]):
+    for t in tuples:
+        print("\t(" + str(t[0]) + ", " + t[1].__str__() + ")")
+
+
+def debug_print_cards(cards: List[Card]):
+    if DEBUG:
+        print_cards(cards)
+
+
+def debug_print_cards_of_index(tuples: List[Tuple[int, Card]]):
+    if DEBUG:
+        print_cards_of_index(tuples)

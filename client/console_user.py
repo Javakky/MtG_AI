@@ -1,20 +1,8 @@
 from abc import *
-from typing import List
 
-from games.cards.card import Card
 from games.game import Game
 from games.i_user import IUser
-from util.util import DEBUG
-
-
-def print_cards(cards: List[Card]):
-    for card in cards:
-        print("\t" + card.__str__())
-
-
-def debug_print_cards(cards: List[Card]):
-    if DEBUG:
-        print_cards(cards)
+from util.util import DEBUG, print_cards
 
 
 class ConsoleUser(IUser, metaclass=ABCMeta):

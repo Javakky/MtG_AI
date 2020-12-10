@@ -55,10 +55,10 @@ class Battlefield:
                 if isinstance(card, type):
                     result.append(card)
         if untapped is not None:
-            tmp = []
+            tmp: List[P] = []
             for c in result:
                 if c.untapped == untapped:
-                    tmp = c
+                    tmp.append(c)
             result = tmp
         return result
 

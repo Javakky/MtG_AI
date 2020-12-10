@@ -1,11 +1,13 @@
 from typing import List, Dict
 
-from client.console_user import ConsoleUser, print_cards
+from client.console_user import ConsoleUser
 from deck.deck_list import get_sample_deck
 from games.cards.card import Card
 from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
+from util.Exception import IllegalManaException
+from util.util import debug_print, print_cards
 
 
 class UserClient(ConsoleUser):
@@ -48,12 +50,18 @@ class UserClient(ConsoleUser):
         print("3. 自分の戦場の確認")
         print("4. 相手の戦場確認")
         print("5. 優先権の放棄")
-        choosen: int = int(input())
+        console_in: str = input()
+        if not console_in.isdecimal():
+            self.receive_priority()
+        choosen: int = int(console_in)
         if not 1 <= choosen <= 5:
             print("選択された番号は存在しません")
         elif choosen == 1:
             print("プレイするカードを選択：")
-            index: int = int(input())
+            console_in: str = input()
+            if not console_in.isdecimal():
+                self.receive_priority()
+            index: int = int(console_in)
             card: Card = self.game.get_hand(self, index)
             if isinstance(card, Land):
                 self.game.play_land(index)
@@ -77,7 +85,11 @@ class UserClient(ConsoleUser):
                             elif i == -2:
                                 indexes = []
                             elif i == -1:
-                                self.game.cast_pay_cost(index, indexes)
+                                try:
+                                    self.game.cast_pay_cost(index, indexes)
+                                except IllegalManaException as e:
+                                    debug_print(e)
+                                    self.receive_priority()
                                 break
                             elif not i in indexes:
                                 indexes.append(i)
@@ -100,7 +112,7 @@ class UserClient(ConsoleUser):
             self.game.pass_priority()
 
     def declare_attackers_step(self):
-        if len(self.game.get_fields(self, False, Creature)) < 1:
+        if self.game.get_fields(self, True, Creature).__len__() < 1:
             self.game.declare_attackers([])
             return
         while True:
@@ -198,4 +210,4 @@ class UserClient(ConsoleUser):
         self.game.assign_damage(attacker, blockers, damages)
 
     def ending_the_game(self, win: bool):
-        print("【" + self.name + "】は" + "勝利" if win else "敗北" + "しました")
+        print("【" + self.name + "】は" + ("勝利" if win else "敗北") + "しました")

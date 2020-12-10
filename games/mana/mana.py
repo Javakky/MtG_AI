@@ -17,12 +17,12 @@ class Mana:
             result += "(" + str(colorless) + ")"
         return result
 
-    def __init__(self, symbols=None, num: int = 0):
+    def __init__(self, symbols: List[Color] = None, num: int = 0):
         if symbols is None:
             symbols = []
         self.symbols: List[Color] = symbols
         self.counts: Dict[Color, int] = {}
-        self.count_all: Union[None, int] = None
+        self.count_all: Optional[int] = None
         self.symbols.extend([Color.COLORLESS for i in range(num)])
 
     def __add__(self, manas: object) -> 'Mana':
@@ -38,7 +38,9 @@ class Mana:
 
     def count(self, color: Color = None):
         if color is not None:
-            if self.counts[color] is None:
+            if color not in self.symbols:
+                return 0
+            if color not in self.counts or self.counts[color] is None:
                 self.counts[color] = self.symbols.count(color)
             return self.counts[color]
         else:
