@@ -18,9 +18,11 @@ def require_land(creature: Creature, lands: List[Tuple[int, Land]]):
 
 
 class AI(ConsoleUser):
-    def play_land(self):
+    def play_land(self) -> bool:
         lands: List[Tuple[int, Land]] = self.game.get_indexed_hands(self, Land)
-        if lands.__len__() > 0:
+        if not self.game.played_land() and lands.__len__() > 0:
             debug_print("【" + self.name + "】が土地をプレイしました：")
             debug_print_cards([lands[0][1]])
             self.game.play_land(lands[0][0])
+            return True
+        return False

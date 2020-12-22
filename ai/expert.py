@@ -196,8 +196,7 @@ class Expert(AI):
         debug_print("【" + self.name + "】は" + ("勝利" if win else "敗北") + "しました")
 
     def receive_priority(self):
-        if not self.game.played_land():
-            self.play_land()
+        if self.play_land():
             return
         creatures: List[Tuple[int, Creature]] = self.game.get_indexed_hands(self, Creature)
         lands: List[Tuple[int, Land]] = self.game.get_indexed_fields(self, True, type=Land)

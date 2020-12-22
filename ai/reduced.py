@@ -8,6 +8,7 @@ from games.cards.card import Card
 from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
+from games.mana.mana import Mana
 from util.util import debug_print, get_keys_tuple_list, get_values_tuple_list, debug_print_cards, \
     debug_print_cards_of_index
 
@@ -45,10 +46,12 @@ class Reduced(AI):
         debug_print("【" + self.name + "】は" + ("勝利" if win else "敗北") + "しました")
 
     def receive_priority(self):
-        if not self.game.played_land():
-            self.play_land()
+        if self.play_land():
             return
-        creatures: List[Tuple[int, Creature]] = self.game.get_indexed_hands(self, Creature)
+        remain_mana: Mana = self.game.get_remain_mana()
+        creatures: List[Tuple[int, Creature]] = list(filter(
+            lambda x: (x[1].mana_cost.count() < remain_mana.count()),
+            self.game.get_indexed_hands(self, Creature)))
         lands: List[Tuple[int, Land]] = self.game.get_indexed_fields(self, True, type=Land)
         if creatures.__len__() > 0:
             creature: Tuple[int, Creature] = creatures[random.randint(0, creatures.__len__() - 1)]
