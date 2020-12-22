@@ -153,7 +153,9 @@ class Game:
             destroy_attackers: List[int] = []
             destroy_blockers: List[int] = []
             for k in self.destroy_creatures:
-                combat: Dict = {"damage": 0, "destroy": {"attacker": None, "blocker": []}}
+                combat: Dict[str, Union[int, Dict[str, Optional[List[str]]]]] = {"damage": 0,
+                                                                                 "destroy": {"attacker": None,
+                                                                                             "blocker": []}}
                 if k["damage"] > 0:
                     combat["damage"] += k["damage"]
                     if self.active_player().damage(k["damage"]) < 1:

@@ -1,7 +1,7 @@
 from itertools import combinations
 from typing import List, Dict, Optional, cast, Tuple, Iterator, Callable, Union
 
-from client.console_user import ConsoleUser
+from ai.ai import require_land, AI
 from deck.deck_list import get_sample_deck
 from games.cards.card import Card
 from games.cards.creature import Creature
@@ -161,7 +161,7 @@ def find_damage_destroyable_max_cost_assign(point: int, B: List[Tuple[int, Creat
     return assign
 
 
-class Expert(ConsoleUser):
+class Expert(AI):
 
     def __init__(self, game: Game, name: str):
         super().__init__(game, name)
@@ -197,13 +197,8 @@ class Expert(ConsoleUser):
 
     def receive_priority(self):
         if not self.game.played_land():
-            lands: List[Tuple[int, Land]] = self.game.get_indexed_hands(self, Land)
-            if lands.__len__() > 0:
-                debug_print("【" + self.name + "】が土地をプレイしました：")
-                debug_print_cards([lands[0][1]])
-                self.game.play_land(lands[0][0])
-                return
-
+            self.play_land()
+            return
         creatures: List[Tuple[int, Creature]] = self.game.get_indexed_hands(self, Creature)
         lands: List[Tuple[int, Land]] = self.game.get_indexed_fields(self, True, type=Land)
         remain_mana: Mana = self.game.get_remain_mana()
@@ -216,21 +211,13 @@ class Expert(ConsoleUser):
                 most_large_cost_creature = cast(Creature, tpl[1])
                 creature_index = tpl[0]
         if most_large_cost_creature is not None:
-            land_indexes: List[int] = []
-            tapped_lands: List[Land] = []
-            generated_mana: int = 0
-            creature_mana: int = most_large_cost_creature.mana_cost.count()
-            for land in lands:
-                if creature_mana > generated_mana:
-                    land_indexes.append(land[0])
-                    tapped_lands.append(land[1])
-                    generated_mana += land[1].mana.count()
+            land_indexes: List[Tuple[int, Creature]] = require_land(most_large_cost_creature, lands)
             self.debug_print_field()
             debug_print("【" + self.name + "】がクリーチャーをプレイしました：")
             debug_print_cards([most_large_cost_creature])
             debug_print("土地をタップしました：")
-            debug_print_cards(tapped_lands)
-            self.game.cast_pay_cost(creature_index, land_indexes)
+            debug_print_cards(get_values_tuple_list(land_indexes))
+            self.game.cast_pay_cost(creature_index, get_keys_tuple_list(land_indexes))
         else:
             self.game.pass_priority()
 

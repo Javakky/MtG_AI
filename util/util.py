@@ -21,7 +21,7 @@ def flatten(list: List[T]):
     return result
 
 
-def debug_print(str: Union[str, Union[Exception, Dict[str]]] = ""):
+def debug_print(str: Union[str, Union[Exception, Dict[str, object]]] = ""):
     if DEBUG:
         print(str)
 
