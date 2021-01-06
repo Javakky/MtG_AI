@@ -181,7 +181,7 @@ class Expert(AI):
         most_large_cost_creature: Optional[Creature] = None
         creature_index: int = -1
         for tpl in creatures:
-            if tpl[1].mana_cost.count() < remain_mana.count() and \
+            if tpl[1].mana_cost.count() <= remain_mana.count() and \
                     (most_large_cost_creature is None
                      or most_large_cost_creature.mana_cost.count() < tpl[1].mana_cost.count()):
                 most_large_cost_creature = cast(Creature, tpl[1])

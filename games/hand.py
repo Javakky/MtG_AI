@@ -1,10 +1,11 @@
-from typing import List, Type, TypeVar
+from typing import List, Type, TypeVar, Optional
 
+from games.card_holder import CardHolder
 from games.cards.card import Card
 from util.util import assert_instanceof
 
 
-class Hand:
+class Hand(CardHolder):
     C = TypeVar('C', bound=Card)
 
     def __init__(self):
@@ -13,9 +14,23 @@ class Hand:
     def append(self, card: Card):
         self.cards.append(card)
 
-    def pop(self, index: int, type: Type[C] = Card) -> C:
+    def pop(self, name: str) -> Optional[Card]:
+        if name is None:
+            raise NotImplementedError
+        for card in self.cards:
+            if card.name == name:
+                self.cards.remove(card)
+                return card
+        return None
+
+    def pop_index(self, index: int, type: Type[C] = Card) -> C:
         assert_instanceof(self.cards[index], type)
         return self.cards.pop(index)
+
+    def pop_all(self) -> List[Card]:
+        cards: List[Card] = self.cards
+        self.cards = []
+        return cards
 
     def get(self, index: int, type: Type[C] = Card) -> C:
         assert_instanceof(self.cards[index], type)
@@ -30,3 +45,8 @@ class Hand:
             if isinstance(c, type):
                 result.append(c)
         return result
+
+    def set_all(self, cards: List[Card]):
+        self.pop_all()
+        for card in cards:
+            self.append(card)

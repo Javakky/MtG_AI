@@ -1,16 +1,26 @@
 from typing import List, Type, TypeVar, Union
 
+from games.card_holder import CardHolder
 from games.cards.mana_base import ManaBase
 from games.cards.permanent import Permanent
 from games.mana.mana import Mana
 from util.util import assert_instanceof
 
 
-class Battlefield:
+class Battlefield(CardHolder):
     P = TypeVar('P', bound=Permanent)
 
     def __init__(self):
         self.permanents: List[Permanent] = []
+
+    def pop(self, name: str):
+        if name is None:
+            raise NotImplementedError
+        for card in self.cards:
+            if card.name == name:
+                self.cards.remove(card)
+                return card
+        return None
 
     def append(self, permanent: Permanent):
         self.permanents.append(permanent)
@@ -42,7 +52,7 @@ class Battlefield:
         assert_instanceof(self.permanents[index], type)
         return self.permanents[index].untapped
 
-    def pop(self, index, type: Type[P] = Permanent) -> P:
+    def pop_index(self, index, type: Type[P] = Permanent) -> P:
         assert_instanceof(self.permanents[index], type)
         return self.permanents.pop(index)
 

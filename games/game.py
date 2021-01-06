@@ -29,6 +29,7 @@ class Game:
 
     def set_user(self, user):
         self.players[user] = Player(user.get_deck())
+        self.players[user].first_draw()
 
     def active_player(self) -> Player:
         return self.players[self.active_user]
@@ -236,6 +237,9 @@ class Game:
 
     def get_hands(self, user, type: Type[C] = Card) -> List[C]:
         return self.players[user].get_hands(type)
+
+    def get_graveyards(self, user, type: Type[C] = Card) -> List[C]:
+        return self.players[user].get_graveyards(type)
 
     def get_hand(self, user, index: int, type: Type[P] = Permanent) -> P:
         return self.players[user].get_hand(index, type)
