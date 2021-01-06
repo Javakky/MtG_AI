@@ -47,6 +47,7 @@ class CardPool:
         elif value.type() == CardType.LAND:
             self.lands.append(value)
 
+
 CARD_POOL: CardPool = CardPool()
 
 # 1コスト

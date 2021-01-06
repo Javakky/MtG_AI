@@ -22,8 +22,12 @@ class Player:
         self.life: int = 20
         self.played_land: bool = False
         self.library.shuffle()
+
+    def first_draw(self) -> List[Card]:
+        cards: List[Card] = []
         for i in range(7):
-            self.draw()
+            cards.append(self.draw())
+        return cards
 
     def draw(self) -> Optional[Card]:
         card: Card = self.library.pop()
@@ -40,7 +44,7 @@ class Player:
     def play_land(self, index: int):
         if self.played_land:
             raise IllegalPlayLandException("このターン既に土地はプレイされています")
-        self.field.append(self.hand.pop(index, Land))
+        self.field.append(self.hand.pop_index(index, Land))
         self.played_land = True
 
     def cast_pay_cost(self, spell_index: int, manabase_indexes: List[int]):
@@ -54,11 +58,11 @@ class Player:
             raise IllegalManaException("マナが足りません")
         for i in manabase_indexes:
             self.field.tap(i, Land)
-        self.field.append(self.hand.pop(spell_index, Permanent))
+        self.field.append(self.hand.pop_index(spell_index, Permanent))
 
     def cast(self, index: int):
         if isinstance(self.hand.get(index), Permanent):
-            self.field.append(self.hand.pop(index, Permanent))
+            self.field.append(self.hand.pop_index(index, Permanent))
 
     def declare_attackers(self, indexes: List[int]) -> List[int]:
         tmp_attacker = []
@@ -77,12 +81,15 @@ class Player:
         return tmp_blocker
 
     def destroy(self, index: int, type: Type[P] = Permanent) -> P:
-        tmp = self.field.pop(index, type)
+        tmp = self.field.pop_index(index, type)
         self.graveyard.append(tmp)
         return tmp
 
     def get_hands(self, type: Type[C] = Card) -> List[C]:
         return self.hand.get_all(type)
+
+    def get_graveyards(self, type: Type[C] = Card) -> List[C]:
+        return self.graveyard.get_all(type)
 
     def get_hand(self, index: int, type: Type[P] = Permanent) -> P:
         return self.hand.get(index, type)
