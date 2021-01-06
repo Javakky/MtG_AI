@@ -60,5 +60,13 @@ class Mana:
             return False
         return True
 
+    def __eq__(self, mana) -> bool:
+        if not isinstance(mana, Mana):
+            return False
+        for color in Color:
+            if self.count(color) != mana.count(color):
+                return False
+        return True
+
     def clone(self) -> 'Mana':
         return Mana(self.symbols)

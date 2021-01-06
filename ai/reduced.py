@@ -2,7 +2,6 @@ import random
 from typing import List, Dict, Tuple
 
 from ai.ai import require_land, AI
-from ai.expert import find_damage_destroyable_max_cost_assign
 from deck.deck_list import get_sample_deck
 from games.cards.card import Card
 from games.cards.creature import Creature
@@ -111,9 +110,3 @@ class Reduced(AI):
             debug_print_cards_of_index(B[i])
             self.game.declare_blokers(i, get_keys_tuple_list(B[i]))
         self.game.combat_damage()
-
-    def assign_damage(self, attacker: int, blockers: List[int]):
-        point: int = self.game.get_field(self, attacker, Creature).power
-        _b: List[Tuple[int, Creature]] = [(x, self.game.get_field(self.game.non_self_users(self)[0], x, Creature))
-                                          for x in blockers]
-        self.game.assign_damage(attacker, blockers, find_damage_destroyable_max_cost_assign(point, _b))

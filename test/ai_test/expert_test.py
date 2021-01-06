@@ -2,10 +2,10 @@ import unittest
 from typing import cast, Tuple
 from unittest import TestCase
 
+from ai.ai import find_damage_destroyable_max_cost_assign
 from ai.expert import exists_one_sidedly_destroied_pair, exists_exchanged_low_cost_pair, \
     exists_exchange_high_cost_next_turn, find_one_sidedly_destroied_smaller_cost_pair, find_exchanged_low_cost_creature, \
-    maximum_playable_creature_count_enough_land, count_smallest_pair_exceeds_my_life, find_exchanged_creature_pair, \
-    find_damage_destroyable_max_cost_assign
+    maximum_playable_creature_count_enough_land, count_smallest_pair_exceeds_my_life, find_exchanged_creature_pair
 from deck.card_pool import CARD_POOL
 from games.cards.creature import Creature
 from games.mana.mana import Mana
