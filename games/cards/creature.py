@@ -14,7 +14,7 @@ class Creature(Permanent, Spell):
 
     def __init__(self, name: str, cost: Mana, creature_type: List[str], power: int, toughness: int):
         super().__init__(name)
-        self.mana_cost = cost
+        self.mana_cost: Mana = cost
         self.creature_type: Set[str] = set(creature_type)
         self.power: int = power
         self.toughness: int = toughness

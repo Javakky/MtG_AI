@@ -1,5 +1,5 @@
 from itertools import combinations
-from typing import List, Dict, Optional, cast, Tuple, Iterator, Callable, Union
+from typing import List, Dict, Optional, cast, Tuple, Iterator, Callable
 
 from ai.ai import require_land, AI
 from deck.deck_list import get_sample_deck
@@ -8,7 +8,7 @@ from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
 from games.mana.mana import Mana
-from util.util import debug_print, get_keys_tuple_list, get_values_tuple_list, index_with_default, debug_print_cards, \
+from util.util import debug_print, get_keys_tuple_list, get_values_tuple_list, debug_print_cards, \
     debug_print_cards_of_index
 
 
@@ -136,29 +136,6 @@ def find_exchanged_creature_pair(
                     min_count = count
                     result = list(c)
     return result
-
-
-def find_damage_destroyable_max_cost_assign(point: int, B: List[Tuple[int, Creature]]) -> List[int]:
-    _b = list(filter(lambda x: x[1].toughness <= point, B))
-    result: List[Tuple[int, Creature]] = []
-    max_cost: int = 0
-    max_count: int = 0
-    for i in range(1, _b.__len__() + 1):
-        comb: List[Tuple[Tuple[int, Creature], ...]] = list(combinations(_b, i))
-        for c in comb:
-            if sum([x[1].toughness for x in c]) <= point:
-                cost: int = sum([x[1].mana_cost.count() for x in c])
-                count: int = c.__len__()
-                if cost > max_cost or cost == max_cost and count >= max_count:
-                    max_cost = cost
-                    max_count = count
-                    result = list(c)
-    assign: List[int] = [0 for x in B]
-    for r in result:
-        index: Union[int, False] = index_with_default(B, r)
-        if index is not False:
-            assign[index] = r[1].toughness
-    return assign
 
 
 class Expert(AI):
@@ -345,9 +322,3 @@ class Expert(AI):
             debug_print_cards_of_index(B[i])
             self.game.declare_blokers(i, get_keys_tuple_list(B[i]))
         self.game.combat_damage()
-
-    def assign_damage(self, attacker: int, blockers: List[int]):
-        point: int = self.game.get_field(self, attacker, Creature).power
-        _b: List[Tuple[int, Creature]] = [(x, self.game.get_field(self.game.non_self_users(self)[0], x, Creature))
-                                          for x in blockers]
-        self.game.assign_damage(attacker, blockers, find_damage_destroyable_max_cost_assign(point, _b))
