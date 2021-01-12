@@ -4,7 +4,7 @@ from typing import List, Tuple, Union, NoReturn
 from client.console_user import ConsoleUser
 from games.cards.creature import Creature
 from games.cards.land import Land
-from util.util import debug_print, debug_print_cards, index_with_default
+from util.util import debug_print, debug_print_cards, index_with_default, combinations_all
 
 
 def require_land(creature: Creature, lands: List[Tuple[int, Land]]) -> List[Tuple[int, Land]]:
@@ -56,3 +56,12 @@ class AI(ConsoleUser):
         _b: List[Tuple[int, Creature]] = [(x, self.game.get_field(self.game.non_self_users(self)[0], x, Creature))
                                           for x in blockers]
         self.game.assign_damage(attacker, blockers, find_damage_destroyable_max_cost_assign(point, _b))
+
+
+def all_playable_creatures(creatures: List[Tuple[int, Creature]], remain_mana: int) \
+        -> List[List[Tuple[int, Creature]]]:
+    playable_creatures: List[List[Tuple[int, Creature]]] = combinations_all(creatures, 1)
+    for creatures in playable_creatures:
+        if sum([x[1].mana_cost.count() for x in creatures]) > remain_mana:
+            playable_creatures.remove(creatures)
+    return playable_creatures

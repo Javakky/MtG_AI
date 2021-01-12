@@ -1,36 +1,14 @@
 import random
-from itertools import combinations
-from typing import List, Dict, Tuple, Iterator, NoReturn
+from typing import List, Dict, Tuple, NoReturn
 
-from ai.ai import require_land, AI
+from ai.ai import require_land, AI, all_playable_creatures
 from deck.deck_list import get_sample_deck
 from games.cards.card import Card
 from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
 from util.util import debug_print, get_keys_tuple_list, get_values_tuple_list, debug_print_cards, \
-    debug_print_cards_of_index
-
-
-def all_playable_creature(creatures: List[Tuple[int, Creature]], mana_cost: int) \
-        -> List[List[Tuple[int, Creature]]]:
-    result: List[List[Tuple[int, Creature]]] = []
-    for i in reversed(range(0, creatures.__len__() + 1)):
-        comb: Iterator[Tuple[Tuple[int, Creature], ...]] = combinations(creatures, i)
-        for tuple in comb:
-            if sum([x[1].mana_cost.count() for x in tuple]) <= mana_cost:
-                result.append(list(tuple))
-    return result
-
-
-def all_attackable_creature(creatures: List[Tuple[int, Creature]]) \
-        -> List[List[Tuple[int, Creature]]]:
-    result: List[List[Tuple[int, Creature]]] = []
-    for i in reversed(range(0, creatures.__len__() + 1)):
-        comb: Iterator[Tuple[Tuple[int, Creature], ...]] = combinations(creatures, i)
-        for tuple in comb:
-            result.append(list(tuple))
-    return result
+    debug_print_cards_of_index, combinations_all
 
 
 class RandomPlayer(AI):
@@ -90,7 +68,7 @@ class RandomPlayer(AI):
                 self.game.pass_priority()
         else:
             self.selected_spell = True
-            playable: List[List[Tuple[int, Creature]]] = all_playable_creature(
+            playable: List[List[Tuple[int, Creature]]] = all_playable_creatures(
                 self.game.get_indexed_hands(self, Creature),
                 self.game.get_remain_mana().count()
             )
@@ -108,7 +86,7 @@ class RandomPlayer(AI):
             return
 
         debug_print_cards(self.game.get_fields(self.game.non_self_users(self)[0], True, Creature))
-        attackable: List[List[Tuple[int, Creature]]] = all_attackable_creature(P_A)
+        attackable: List[List[Tuple[int, Creature]]] = combinations_all(P_A)
         self.game.declare_attackers(get_keys_tuple_list(attackable[random.randint(0, attackable.__len__() - 1)]))
 
     def declare_blockers_step(self, P_A_index: List[int]) -> NoReturn:
