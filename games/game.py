@@ -1,3 +1,4 @@
+import copy
 from random import choice
 from typing import Dict, List, Type, TypeVar, TYPE_CHECKING, Tuple, Union, Optional, NoReturn
 
@@ -23,6 +24,7 @@ class Game:
         self.active_user: Optional[IUser] = None
         self.tmp_attacker: List[int]
         self.tmp_blocker: Dict[int, List[int]]
+        self.not_blocked_attacker: List[int] = []
         self.turn: int = 0
         self.destroy_creatures: List[Dict[str, Union[int, Dict[IUser, List[int]]]]] = []
         self.winner: Optional[IUser] = None
@@ -119,6 +121,7 @@ class Game:
 
     def _declare_attackers(self, indexes: List[int]) -> NoReturn:
         self.tmp_attacker = self.active_player().declare_attackers(indexes)
+        self.not_blocked_attacker = copy.deepcopy(self.tmp_attacker)
         self.tmp_blocker = {}
         i: int = 0
         for attacker in self.tmp_attacker:
@@ -132,8 +135,9 @@ class Game:
         self.non_active_users()[0].declare_blockers_step(self.tmp_attacker)
 
     def declare_blokers(self, attacker_index: int, blocker_indexes: List[int]) -> NoReturn:
-        self.tmp_blocker[self.tmp_attacker[attacker_index]] = self.non_active_player()[0].declare_blockers(
-            blocker_indexes)
+        self.tmp_blocker[self.tmp_attacker[attacker_index]] = \
+            self.non_active_player()[0].declare_blockers(blocker_indexes)
+        self.not_blocked_attacker.remove(self.tmp_attacker[attacker_index])
 
     def combat_damage(self) -> NoReturn:
         if self.tmp_attacker.__len__() > 0:
@@ -145,9 +149,11 @@ class Game:
                 Creature)
             # debug_print("ブロッカー：")
             # debug_print_cards(blockers)
-            result: Dict[str, Union[int, Dict[IUser, List[int]]]] = {"damage": 0, "destroy": {self.active_user: [],
-                                                                                              self.non_active_users()[
-                                                                                                  0]: []}}
+            result: Dict[str, Union[int, Dict[IUser, List[int]]]] \
+                = {"damage": 0, "destroy": {
+                self.active_user: [],
+                self.non_active_users()[0]: []
+            }}
             if len(blockers) < 1:
                 result["damage"] = result["damage"] + attacker.power
             elif len(blockers) == 1:
