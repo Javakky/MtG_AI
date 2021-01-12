@@ -1,4 +1,4 @@
-from typing import List, Type, TypeVar, Optional
+from typing import List, Type, TypeVar, Optional, NoReturn
 
 from games.card_holder import CardHolder
 from games.cards.card import Card
@@ -11,7 +11,7 @@ class Hand(CardHolder):
     def __init__(self):
         self.cards: List[Card] = []
 
-    def append(self, card: Card):
+    def append(self, card: Card) -> NoReturn:
         self.cards.append(card)
 
     def pop(self, name: str) -> Optional[Card]:
@@ -46,7 +46,7 @@ class Hand(CardHolder):
                 result.append(c)
         return result
 
-    def set_all(self, cards: List[Card]):
+    def set_all(self, cards: List[Card]) -> NoReturn:
         self.pop_all()
         for card in cards:
             self.append(card)

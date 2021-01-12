@@ -1,7 +1,8 @@
-from typing import List, Type, TypeVar, Optional
+from typing import List, Type, TypeVar, Optional, NoReturn
 
 from games.card_holder import CardHolder
 from games.cards.card import Card
+from util.util import assert_instanceof
 
 
 class Graveyard(CardHolder):
@@ -10,7 +11,7 @@ class Graveyard(CardHolder):
     def __init__(self):
         self.cards: List[Card] = []
 
-    def append(self, card: Card):
+    def append(self, card: Card) -> NoReturn:
         self.cards.append(card)
 
     def get(self, index: int, type: Type[C] = Card) -> C:

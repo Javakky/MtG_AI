@@ -1,4 +1,5 @@
 from abc import ABCMeta
+from typing import NoReturn
 
 from games.cards.card import Card
 
@@ -9,8 +10,8 @@ class Permanent(Card, metaclass=ABCMeta):
         super().__init__(name)
         self.untapped: bool = True
 
-    def tap(self):
+    def tap(self) -> NoReturn:
         self.untapped = False
 
-    def untap(self):
+    def untap(self) -> NoReturn:
         self.untapped = True

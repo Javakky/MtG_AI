@@ -1,5 +1,5 @@
 from itertools import combinations
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, NoReturn
 
 from client.console_user import ConsoleUser
 from games.cards.creature import Creature
@@ -7,7 +7,7 @@ from games.cards.land import Land
 from util.util import debug_print, debug_print_cards, index_with_default
 
 
-def require_land(creature: Creature, lands: List[Tuple[int, Land]]):
+def require_land(creature: Creature, lands: List[Tuple[int, Land]]) -> List[Tuple[int, Land]]:
     land_indexes: List[Tuple[int, Land]] = []
     generated_mana: int = 0
     creature_mana: int = creature.mana_cost.count()
@@ -51,7 +51,7 @@ class AI(ConsoleUser):
             return True
         return False
 
-    def assign_damage(self, attacker: int, blockers: List[int]):
+    def assign_damage(self, attacker: int, blockers: List[int]) -> NoReturn:
         point: int = self.game.get_field(self, attacker, Creature).power
         _b: List[Tuple[int, Creature]] = [(x, self.game.get_field(self.game.non_self_users(self)[0], x, Creature))
                                           for x in blockers]

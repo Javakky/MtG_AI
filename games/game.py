@@ -1,5 +1,5 @@
 from random import choice
-from typing import Dict, List, Type, TypeVar, TYPE_CHECKING, Tuple
+from typing import Dict, List, Type, TypeVar, TYPE_CHECKING, Tuple, Union, Optional, NoReturn
 
 if TYPE_CHECKING:
     from games.i_user import IUser
@@ -11,10 +11,11 @@ from games.mana.mana import Mana
 from util.Exception import IllegalDamagePointsException
 from util.util import debug_print
 
+P = TypeVar('P', bound=Permanent)
+C = TypeVar('C', bound=Card)
+
 
 class Game:
-    P = TypeVar('P', bound=Permanent)
-    C = TypeVar('C', bound=Card)
 
     def __init__(self):
         self.players: Dict[IUser, Player] = {}
@@ -24,10 +25,10 @@ class Game:
         self.tmp_blocker: Dict[int, List[int]]
         self.turn: int = 0
         self.destroy_creatures: List[Dict[str, Union[int, Dict[IUser, List[int]]]]] = []
-        self.winner: str = ""
+        self.winner: Optional[IUser] = None
         self.reason: str = ""
 
-    def set_user(self, user):
+    def set_user(self, user) -> NoReturn:
         self.players[user] = Player(user.get_deck())
         self.players[user].first_draw()
 
@@ -62,13 +63,13 @@ class Game:
                 others.append(k)
         return others
 
-    def starting_the_game(self):
+    def starting_the_game(self) -> NoReturn:
         for k in self.players.keys():
             k.draw_starting_hand(self.players[k].get_hands())
         choose_player: IUser = choice(list(self.players.keys()))
         choose_player.choose_play_first()
 
-    def choose_play_first(self, user, play_first: bool):
+    def choose_play_first(self, user, play_first: bool) -> NoReturn:
         if play_first:
             self.play_first = user
             self.active_user = user
@@ -84,32 +85,38 @@ class Game:
                 tmp_user.chosen_play_first(False)
         self.start_phase()
 
-    def start_phase(self):
+    def _start_phase(self) -> Optional[Card]:
         self.turn = self.turn + 1
         self.untap_step()
-        self.active_user.upkeep_step()
         if self.turn > 1:
-            self.draw_step()
-        else:
-            self.finish_main_phase()
+            return self.draw_step()
 
-    def untap_step(self):
+    def start_phase(self) -> NoReturn:
+        self.active_user.upkeep_step()
+        card: Optional[Card] = self._start_phase()
+        if self.winner is not None:
+            return
+        if card is not None:
+            self.active_user.draw_step(card)
+        self.finish_main_phase()
+
+    def untap_step(self) -> NoReturn:
         self.active_player().untap_all()
 
-    def draw_step(self):
+    def draw_step(self) -> Optional[Card]:
         card: Card = self.active_player().draw()
         if not card:
             debug_print("山札が0枚になりました: " + str(self.active_player().get_library_count()))
-            self.winner = self.non_active_users()[0].name
+            self.winner = self.non_active_users()[0]
             self.reason = "LO"
             self.ending_the_game(self.non_active_users()[0])
         else:
-            self.active_user.draw_step(card)
+            return card
 
-    def finish_main_phase(self):
+    def finish_main_phase(self) -> NoReturn:
         self.active_user.declare_attackers_step()
 
-    def declare_attackers(self, indexes: List[int]):
+    def declare_attackers(self, indexes: List[int]) -> NoReturn:
         if len(indexes) < 1:
             self.main_phase()
             return
@@ -120,11 +127,11 @@ class Game:
             self.tmp_blocker[attacker] = []
         self.non_active_users()[0].declare_blockers_step(self.tmp_attacker)
 
-    def declare_blokers(self, attacker_index: int, blocker_indexes: List[int]):
+    def declare_blokers(self, attacker_index: int, blocker_indexes: List[int]) -> NoReturn:
         self.tmp_blocker[self.tmp_attacker[attacker_index]] = self.non_active_player()[0].declare_blockers(
             blocker_indexes)
 
-    def combat_damage(self):
+    def combat_damage(self) -> NoReturn:
         if self.tmp_attacker.__len__() > 0:
             attacker = self.active_player().get_field(self.tmp_attacker[0], Creature)
             # debug_print("アタッカー：")
@@ -163,7 +170,7 @@ class Game:
                         self.active_user.combat_damage(combat)
                         debug_print("対戦相手のライフが0になりました")
                         self.ending_the_game(self.active_user)
-                        self.winner = self.active_user.name
+                        self.winner = self.active_user
                         self.reason = "DAMAGE"
                         return
                 for blocker in k["destroy"][self.non_active_users()[0]]:
@@ -185,7 +192,7 @@ class Game:
             self.destroy_creatures = []
             self.main_phase()
 
-    def assign_damage(self, attacker_index: int, blocker_indexes: List[int], damages: List[int]):
+    def assign_damage(self, attacker_index: int, blocker_indexes: List[int], damages: List[int]) -> NoReturn:
         attacker = self.active_player().get_field(attacker_index, Creature)
         result: Dict[str, Union[int, Dict[IUser, List[int]]]] = {"damage": 0, "destroy": {self.active_user: [],
                                                                                           self.non_active_users()[
@@ -208,28 +215,31 @@ class Game:
         self.tmp_attacker.pop(0)
         self.combat_damage()
 
-    def main_phase(self):
+    def main_phase(self) -> NoReturn:
         self.active_user.receive_priority()
 
-    def play_land(self, index: int):
+    def _play_land(self, index: int) -> NoReturn:
         self.active_player().play_land(index)
+
+    def play_land(self, index: int) -> NoReturn:
+        self._play_land(index)
         self.active_user.receive_priority()
 
-    def played_land(self):
+    def played_land(self) -> bool:
         return self.active_player().played_land
 
-    def cast_pay_cost(self, spell_index: int, mana_indexes: List[int]):
+    def cast_pay_cost(self, spell_index: int, mana_indexes: List[int]) -> NoReturn:
         self.active_player().cast_pay_cost(spell_index, mana_indexes)
         self.active_user.receive_priority()
 
-    def pass_priority(self):
+    def pass_priority(self) -> NoReturn:
         self.ending_phase()
 
-    def ending_phase(self):
+    def ending_phase(self) -> NoReturn:
         self.active_user = self.non_active_users()[0]
         self.start_phase()
 
-    def ending_the_game(self, winner):
+    def ending_the_game(self, winner) -> NoReturn:
         # winner.ending_the_game(True)
         for user in self.other_users(winner):
             # user.ending_the_game(False)

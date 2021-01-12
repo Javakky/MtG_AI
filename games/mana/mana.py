@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Optional
 
 from games.mana.color import Color
 
@@ -36,7 +36,7 @@ class Mana:
         else:
             raise TypeError("Manaではない型との演算に+は利用できません: " + manas.__class__.__name__)
 
-    def count(self, color: Color = None):
+    def count(self, color: Color = None) -> int:
         if color is not None:
             if color not in self.symbols:
                 return 0

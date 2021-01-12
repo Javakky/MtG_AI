@@ -1,4 +1,4 @@
-from typing import TypeVar, Type, List, Tuple, Union, Dict
+from typing import TypeVar, Type, List, Tuple, Union, Dict, NoReturn
 
 from games.cards.card import Card
 
@@ -6,12 +6,12 @@ T = TypeVar('T', bound=object)
 DEBUG = False
 
 
-def assert_instanceof(__o: object, __t: Type[T]):
+def assert_instanceof(__o: object, __t: Type[T]) -> NoReturn:
     if not isinstance(__o, __t):
         raise TypeError("不正な型: [要求された型 => " + __t.__name__ + ", 渡された型 => " + __o.__class__.__name__ + "]")
 
 
-def flatten(list: List[T]):
+def flatten(list: List[Union[T, List[T]]]) -> List[T]:
     result: List[T] = []
     for element in list:
         if isinstance(element, List):
@@ -21,7 +21,7 @@ def flatten(list: List[T]):
     return result
 
 
-def debug_print(str: Union[str, Union[Exception, Dict[str, object]]] = ""):
+def debug_print(str: Union[str, Union[Exception, Dict[str, object]]] = "") -> NoReturn:
     if DEBUG:
         print(str)
 
@@ -41,21 +41,21 @@ def index_with_default(l, x, default=False):
         return default
 
 
-def print_cards(cards: List[Card]):
+def print_cards(cards: List[Card]) -> NoReturn:
     for card in cards:
         print("\t" + card.__str__())
 
 
-def print_cards_of_index(tuples: List[Tuple[int, Card]]):
+def print_cards_of_index(tuples: List[Tuple[int, Card]]) -> NoReturn:
     for t in tuples:
         print("\t(" + str(t[0]) + ", " + t[1].__str__() + ")")
 
 
-def debug_print_cards(cards: List[Card]):
+def debug_print_cards(cards: List[Card]) -> NoReturn:
     if DEBUG:
         print_cards(cards)
 
 
-def debug_print_cards_of_index(tuples: List[Tuple[int, Card]]):
+def debug_print_cards_of_index(tuples: List[Tuple[int, Card]]) -> NoReturn:
     if DEBUG:
         print_cards_of_index(tuples)

@@ -1,4 +1,5 @@
 import sys
+from typing import NoReturn
 
 from ai.expert import Expert
 from ai.reduced import Reduced
@@ -6,13 +7,13 @@ from games.game import Game
 from util.log import write
 
 
-def main():
+def main() -> NoReturn:
     sys.setrecursionlimit(10 ** 9)
     game: Game = Game()
     user1 = Expert(game, "ai_1")
     user2 = Reduced(game, "ai_2")
     game.starting_the_game()
-    return game.winner, game.reason
+    return game.winner.name, game.reason
 
 
 if __name__ == '__main__':

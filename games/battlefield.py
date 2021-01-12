@@ -1,4 +1,4 @@
-from typing import List, Type, TypeVar, Union
+from typing import List, Type, TypeVar, Union, Optional, NoReturn
 
 from games.card_holder import CardHolder
 from games.cards.mana_base import ManaBase
@@ -6,34 +6,35 @@ from games.cards.permanent import Permanent
 from games.mana.mana import Mana
 from util.util import assert_instanceof
 
+P = TypeVar('P', bound=Permanent)
+
 
 class Battlefield(CardHolder):
-    P = TypeVar('P', bound=Permanent)
 
     def __init__(self):
         self.permanents: List[Permanent] = []
 
-    def pop(self, name: str):
+    def pop(self, name: str) -> Optional[Permanent]:
         if name is None:
             raise NotImplementedError
-        for card in self.cards:
+        for card in self.permanents:
             if card.name == name:
-                self.cards.remove(card)
+                self.permanents.remove(card)
                 return card
         return None
 
-    def append(self, permanent: Permanent):
+    def append(self, permanent: Permanent) -> NoReturn:
         self.permanents.append(permanent)
 
-    def tap(self, index: int, type: Type[P] = Permanent):
+    def tap(self, index: int, type: Type[P] = Permanent) -> NoReturn:
         assert_instanceof(self.permanents[index], type)
         self.permanents[index].tap()
 
-    def untap(self, index: int, type: Type[P] = Permanent):
+    def untap(self, index: int, type: Type[P] = Permanent) -> NoReturn:
         assert_instanceof(self.permanents[index], type)
         self.permanents[index].untap()
 
-    def untap_all(self):
+    def untap_all(self) -> NoReturn:
         for i in range(len(self.permanents)):
             self.untap(i)
 

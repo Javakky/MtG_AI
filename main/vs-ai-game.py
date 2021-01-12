@@ -1,9 +1,11 @@
+from typing import NoReturn
+
 from ai.expert import Expert
 from client.user_client import UserClient
 from games.game import Game
 
 
-def main():
+def main() -> NoReturn:
     game: Game = Game()
     print("ユーザー名を入力してください")
     user1 = UserClient(game, input())
