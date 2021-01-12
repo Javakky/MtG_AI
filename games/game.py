@@ -86,14 +86,15 @@ class Game:
         self.start_phase()
 
     def _start_phase(self) -> Optional[Card]:
+        self.active_user = self.non_active_users()[0]
         self.turn = self.turn + 1
         self.untap_step()
         if self.turn > 1:
             return self.draw_step()
 
     def start_phase(self) -> NoReturn:
-        self.active_user.upkeep_step()
         card: Optional[Card] = self._start_phase()
+        self.active_user.upkeep_step()
         if self.winner is not None:
             return
         if card is not None:
@@ -116,15 +117,18 @@ class Game:
     def finish_main_phase(self) -> NoReturn:
         self.active_user.declare_attackers_step()
 
-    def declare_attackers(self, indexes: List[int]) -> NoReturn:
-        if len(indexes) < 1:
-            self.main_phase()
-            return
+    def _declare_attackers(self, indexes: List[int]) -> NoReturn:
         self.tmp_attacker = self.active_player().declare_attackers(indexes)
         self.tmp_blocker = {}
         i: int = 0
         for attacker in self.tmp_attacker:
             self.tmp_blocker[attacker] = []
+
+    def declare_attackers(self, indexes: List[int]) -> NoReturn:
+        if len(indexes) < 1:
+            self.main_phase()
+            return
+        self._declare_attackers(indexes)
         self.non_active_users()[0].declare_blockers_step(self.tmp_attacker)
 
     def declare_blokers(self, attacker_index: int, blocker_indexes: List[int]) -> NoReturn:
@@ -236,7 +240,6 @@ class Game:
         self.ending_phase()
 
     def ending_phase(self) -> NoReturn:
-        self.active_user = self.non_active_users()[0]
         self.start_phase()
 
     def ending_the_game(self, winner) -> NoReturn:
