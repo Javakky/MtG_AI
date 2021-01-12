@@ -1,5 +1,5 @@
 import random
-from typing import List, Optional
+from typing import List, Optional, NoReturn
 
 from games.card_holder import CardHolder
 from games.cards.card import *
@@ -7,7 +7,7 @@ from games.cards.card import *
 
 class Library(CardHolder):
 
-    def append(self, card):
+    def append(self, card) -> NoReturn:
         self.cards.append(card)
 
     def __init__(self, deck: List[Card]):
@@ -24,5 +24,5 @@ class Library(CardHolder):
                 return card
         return None
 
-    def shuffle(self):
+    def shuffle(self) -> NoReturn:
         random.shuffle(self.cards)

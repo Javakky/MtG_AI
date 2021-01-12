@@ -34,20 +34,20 @@ class Player:
         self.hand.append(card)
         return card
 
-    def play(self, index: int):
+    def play(self, index: int) -> NoReturn:
         card = self.hand.get(index)
         if isinstance(card, Land):
             self.play_land(index)
         elif isinstance(card, Spell):
             self.cast(index)
 
-    def play_land(self, index: int):
+    def play_land(self, index: int) -> NoReturn:
         if self.played_land:
             raise IllegalPlayLandException("このターン既に土地はプレイされています")
         self.field.append(self.hand.pop_index(index, Land))
         self.played_land = True
 
-    def cast_pay_cost(self, spell_index: int, manabase_indexes: List[int]):
+    def cast_pay_cost(self, spell_index: int, manabase_indexes: List[int]) -> NoReturn:
         mana_cost: Mana = Mana([])
         for i in manabase_indexes:
             if not self.field.get(i, ManaBase).untapped:
@@ -60,7 +60,7 @@ class Player:
             self.field.tap(i, Land)
         self.field.append(self.hand.pop_index(spell_index, Permanent))
 
-    def cast(self, index: int):
+    def cast(self, index: int) -> NoReturn:
         if isinstance(self.hand.get(index), Permanent):
             self.field.append(self.hand.pop_index(index, Permanent))
 
@@ -94,7 +94,7 @@ class Player:
     def get_hand(self, index: int, type: Type[P] = Permanent) -> P:
         return self.hand.get(index, type)
 
-    def untap_all(self):
+    def untap_all(self) -> NoReturn:
         self.field.untap_all()
         self.played_land = False
 

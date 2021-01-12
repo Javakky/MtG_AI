@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List, Union
+from typing import Dict, List, Union, NoReturn
 
 from games.cards.card import Card
 from games.cards.card_type import CardType
@@ -40,7 +40,7 @@ class CardPool:
             cards.append(target.clone())
         return cards
 
-    def add_card(self, value: Card):
+    def add_card(self, value: Card) -> NoReturn:
         self.pool[value.name] = value
         if value.type() == CardType.CREATURE:
             self.creatures.append(value)

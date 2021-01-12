@@ -1,5 +1,5 @@
 from itertools import combinations
-from typing import List, Dict, Optional, cast, Tuple, Iterator, Callable
+from typing import List, Dict, Optional, cast, Tuple, Iterator, Callable, NoReturn
 
 from ai.ai import require_land, AI
 from deck.deck_list import get_sample_deck
@@ -148,31 +148,30 @@ class Expert(AI):
         return get_sample_deck()
         # return get_minimum_deck()
 
-    def choose_play_first(self):
+    def choose_play_first(self) -> NoReturn:
         self.game.choose_play_first(self, True)
 
-    def draw_starting_hand(self, hands: List[Card]):
+    def draw_starting_hand(self, hands: List[Card]) -> NoReturn:
         debug_print("【" + self.name + "】の初期手札 " + str(len(hands)) + "枚：")
         debug_print_cards(hands)
         debug_print()
 
-    def chosen_play_first(self, play_first: bool):
+    def chosen_play_first(self, play_first: bool) -> NoReturn:
         pass
 
-    def upkeep_step(self):
+    def upkeep_step(self) -> NoReturn:
         debug_print("ターン" + str(self.game.turn) + "：" + self.name)
 
-    def draw_step(self, card: Card):
+    def draw_step(self, card: Card) -> NoReturn:
         self.debug_print_hand()
-        self.game.finish_main_phase()
 
-    def combat_damage(self, result: Dict):
+    def combat_damage(self, result: Dict) -> NoReturn:
         debug_print(result)
 
-    def ending_the_game(self, win: bool):
+    def ending_the_game(self, win: bool) -> NoReturn:
         debug_print("【" + self.name + "】は" + ("勝利" if win else "敗北") + "しました")
 
-    def receive_priority(self):
+    def receive_priority(self) -> NoReturn:
         if self.play_land():
             return
         creatures: List[Tuple[int, Creature]] = self.game.get_indexed_hands(self, Creature)
@@ -187,7 +186,7 @@ class Expert(AI):
                 most_large_cost_creature = cast(Creature, tpl[1])
                 creature_index = tpl[0]
         if most_large_cost_creature is not None:
-            land_indexes: List[Tuple[int, Creature]] = require_land(most_large_cost_creature, lands)
+            land_indexes: List[Tuple[int, Land]] = require_land(most_large_cost_creature, lands)
             self.debug_print_field()
             debug_print("【" + self.name + "】がクリーチャーをプレイしました：")
             debug_print_cards([most_large_cost_creature])
@@ -197,7 +196,7 @@ class Expert(AI):
         else:
             self.game.pass_priority()
 
-    def declare_attackers_step(self):
+    def declare_attackers_step(self) -> NoReturn:
         P_A: List[Tuple[int, Creature]] = sorted(
             self.game.get_indexed_fields(self, True, Creature),
             key=lambda x: (x[1].power, x[1].mana_cost.count())
@@ -250,7 +249,7 @@ class Expert(AI):
         self.game.declare_attackers(A)
         return
 
-    def declare_blockers_step(self, P_A_index: List[int]):
+    def declare_blockers_step(self, P_A_index: List[int]) -> NoReturn:
         P_A: List[Tuple[int, Tuple[int, Creature]]] = []
         for i in range(P_A_index.__len__()):
             P_A.append(

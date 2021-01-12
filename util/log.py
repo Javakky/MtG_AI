@@ -1,9 +1,10 @@
 import codecs
 import os
 from datetime import datetime
+from typing import NoReturn
 
 
-def write(name, message, dir=""):
+def write(name, message, dir="") -> NoReturn:
     os.chdir('../log')
     dir = os.getcwd() + "/" + dir
     if not os.path.isdir(dir):

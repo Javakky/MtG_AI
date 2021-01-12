@@ -1,5 +1,5 @@
 from abc import *
-from typing import List, Dict, TYPE_CHECKING
+from typing import List, Dict, TYPE_CHECKING, NoReturn
 
 from games.cards.card import Card
 
@@ -19,45 +19,45 @@ class IUser(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def choose_play_first(self):
+    def choose_play_first(self) -> NoReturn:
         raise NotImplementedError
 
     @abstractmethod
-    def draw_starting_hand(self, hands: List[Card]):
+    def draw_starting_hand(self, hands: List[Card]) -> NoReturn:
         raise NotImplementedError
 
     @abstractmethod
-    def chosen_play_first(self, play_first: bool):
+    def chosen_play_first(self, play_first: bool) -> NoReturn:
         raise NotImplementedError
 
     @abstractmethod
-    def upkeep_step(self):
+    def upkeep_step(self) -> NoReturn:
         raise NotImplementedError
 
     @abstractmethod
-    def draw_step(self, card: Card):
+    def draw_step(self, card: Card) -> NoReturn:
         raise NotImplementedError
 
     @abstractmethod
-    def receive_priority(self):
+    def receive_priority(self) -> NoReturn:
         raise NotImplementedError
 
     @abstractmethod
-    def declare_attackers_step(self):
+    def declare_attackers_step(self) -> NoReturn:
         raise NotImplementedError
 
     @abstractmethod
-    def declare_blockers_step(self, attackers: List[int]):
+    def declare_blockers_step(self, attackers: List[int]) -> NoReturn:
         raise NotImplementedError
 
     @abstractmethod
-    def combat_damage(self, result: Dict):
+    def combat_damage(self, result: Dict) -> NoReturn:
         raise NotImplementedError
 
     @abstractmethod
-    def assign_damage(self, attacker: int, blockers: List[int]):
+    def assign_damage(self, attacker: int, blockers: List[int]) -> NoReturn:
         raise NotImplementedError
 
     @abstractmethod
-    def ending_the_game(self, win: bool):
+    def ending_the_game(self, win: bool) -> NoReturn:
         raise NotImplementedError

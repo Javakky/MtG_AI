@@ -11,7 +11,7 @@ def main():
     user1 = Reduced(game, "ai_1")
     user2 = RandomPlayer(game, "ai_2")
     game.starting_the_game()
-    return game.winner, game.reason
+    return game.winner.name, game.reason
 
 
 if __name__ == '__main__':

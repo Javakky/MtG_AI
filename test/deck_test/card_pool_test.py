@@ -1,5 +1,5 @@
 import unittest
-from typing import cast
+from typing import cast, NoReturn
 from unittest import TestCase
 
 from deck.card_pool import CARD_POOL
@@ -8,7 +8,7 @@ from games.mana.color import Color
 
 
 class CardPoolTest(TestCase):
-    def test_generate_test_creature(self):
+    def test_generate_test_creature(self) -> NoReturn:
         name: str = "1/2(3)"
         creature: Creature = cast(Creature, CARD_POOL.get_card(name))
         self.assertEqual(Creature, creature.__class__)

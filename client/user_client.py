@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, NoReturn
 
 from client.console_user import ConsoleUser
 from deck.deck_list import get_sample_deck
@@ -18,10 +18,10 @@ class UserClient(ConsoleUser):
     def get_deck(self) -> List[Card]:
         return get_sample_deck()
 
-    def choose_play_first(self):
+    def choose_play_first(self) -> NoReturn:
         self.game.choose_play_first(self, True)
 
-    def chosen_play_first(self, play_first: bool):
+    def chosen_play_first(self, play_first: bool) -> NoReturn:
         if play_first:
             print("【" + self.name + "】の先攻です")
             print()
@@ -29,21 +29,20 @@ class UserClient(ConsoleUser):
             print("【" + self.name + "】は後攻です")
             print()
 
-    def draw_starting_hand(self, hands: List[Card]):
+    def draw_starting_hand(self, hands: List[Card]) -> NoReturn:
         print("【" + self.name + "】の初期手札 " + str(len(hands)) + "枚：")
         print_cards(hands)
         print()
 
-    def upkeep_step(self):
+    def upkeep_step(self) -> NoReturn:
         print("【" + self.name + "】のターンです")
         print()
 
-    def draw_step(self, card: Card):
+    def draw_step(self, card: Card) -> NoReturn:
         print("【" + self.name + "】のドロー：")
         print("\t" + card.__str__())
-        self.game.finish_main_phase()
 
-    def receive_priority(self):
+    def receive_priority(self) -> NoReturn:
         print("【" + self.name + "】が優先です：")
         print("1. カードのプレイ")
         print("2. 手札の確認")
@@ -111,7 +110,7 @@ class UserClient(ConsoleUser):
         elif choosen == 5:
             self.game.pass_priority()
 
-    def declare_attackers_step(self):
+    def declare_attackers_step(self) -> NoReturn:
         if self.game.get_fields(self, True, Creature).__len__() < 1:
             self.game.declare_attackers([])
             return
@@ -147,7 +146,7 @@ class UserClient(ConsoleUser):
             elif choosen == 3:
                 self.print_field(False)
 
-    def declare_blockers_step(self, attackers: List[int]):
+    def declare_blockers_step(self, attackers: List[int]) -> NoReturn:
         while True:
             print("【" + self.name + "】の防御クリーチャー選択：")
             print("1. 防御クリーチャー選択")
@@ -187,10 +186,10 @@ class UserClient(ConsoleUser):
             elif choosen == 3:
                 self.print_field(False)
 
-    def combat_damage(self, result: Dict):
+    def combat_damage(self, result: Dict) -> NoReturn:
         print(result)
 
-    def assign_damage(self, attacker: int, blockers: List[int]):
+    def assign_damage(self, attacker: int, blockers: List[int]) -> NoReturn:
         damages: List[int] = []
         point: int = self.game.get_field(self, attacker, Creature).power
         for i in blockers:
@@ -209,5 +208,5 @@ class UserClient(ConsoleUser):
                     break
         self.game.assign_damage(attacker, blockers, damages)
 
-    def ending_the_game(self, win: bool):
+    def ending_the_game(self, win: bool) -> NoReturn:
         print("【" + self.name + "】は" + ("勝利" if win else "敗北") + "しました")
