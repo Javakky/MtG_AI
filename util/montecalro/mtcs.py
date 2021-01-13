@@ -1,5 +1,5 @@
 from math import log
-from typing import Tuple, Optional, NoReturn
+from typing import Tuple, Optional, NoReturn, TypeVar
 
 import numpy
 
@@ -24,17 +24,17 @@ class Node:
             value = self.state.playout()
             self.w += value
             self.n += 1
-            if self.n == 10:
+            if self.n == 40:
                 self.expand()
         else:
             next: Node = self.next_child_node()
-            value = self.next_child_node().evaluate()
+            value = next.evaluate() * (1 if next.state.mine(self.state) else -1)
             self.w += value
             self.n += 1
         return value
 
     def expand(self) -> NoReturn:
-        self.child_nodes = tuple(Node(self.state.next(action)) for action in self.state.legal_actions)
+        self.child_nodes = tuple(Node(self.state.next(state)) for state in self.state.legal_actions)
 
     def next_child_node(self) -> 'Node':
         def ucb1_values() -> Tuple[float]:
@@ -51,3 +51,16 @@ class Node:
         ucb1_values = ucb1_values()
 
         return self.child_nodes[numpy.array(ucb1_values).argmax()]
+
+
+N = TypeVar('N', bound=State)
+
+
+def monte_carlo_tree_search_next_action(state: N) -> N:
+    root_node = Node(state)
+    root_node.expand()
+
+    for _ in range(50000):
+        root_node.evaluate()
+
+    return state.legal_actions[numpy.array([x.n for x in root_node.child_nodes]).argmax()]

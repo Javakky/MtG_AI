@@ -1,4 +1,3 @@
-import copy
 from random import choice
 from typing import Dict, List, Type, TypeVar, TYPE_CHECKING, Tuple, Union, Optional, NoReturn
 
@@ -22,9 +21,8 @@ class Game:
         self.players: Dict[IUser, Player] = {}
         self.play_first: IUser
         self.active_user: Optional[IUser] = None
-        self.tmp_attacker: List[int]
-        self.tmp_blocker: Dict[int, List[int]]
-        self.not_blocked_attacker: List[int] = []
+        self.tmp_attacker: List[int] = []
+        self.tmp_blocker: Dict[int, List[int]] = {}
         self.turn: int = 0
         self.destroy_creatures: List[Dict[str, Union[int, Dict[IUser, List[int]]]]] = []
         self.winner: Optional[IUser] = None
@@ -121,7 +119,6 @@ class Game:
 
     def _declare_attackers(self, indexes: List[int]) -> NoReturn:
         self.tmp_attacker = self.active_player().declare_attackers(indexes)
-        self.not_blocked_attacker = copy.deepcopy(self.tmp_attacker)
         self.tmp_blocker = {}
         i: int = 0
         for attacker in self.tmp_attacker:
@@ -137,7 +134,6 @@ class Game:
     def declare_blokers(self, attacker_index: int, blocker_indexes: List[int]) -> NoReturn:
         self.tmp_blocker[self.tmp_attacker[attacker_index]] = \
             self.non_active_player()[0].declare_blockers(blocker_indexes)
-        self.not_blocked_attacker.remove(self.tmp_attacker[attacker_index])
 
     def combat_damage(self) -> NoReturn:
         if self.tmp_attacker.__len__() > 0:
@@ -171,9 +167,8 @@ class Game:
             destroy_attackers: List[int] = []
             destroy_blockers: List[int] = []
             for k in self.destroy_creatures:
-                combat: Dict[str, Union[int, Dict[str, Optional[List[str]]]]] = {"damage": 0,
-                                                                                 "destroy": {"attacker": None,
-                                                                                             "blocker": []}}
+                combat: Dict[str, Union[int, Dict[str, Optional[List[str]]]]] \
+                    = {"damage": 0, "destroy": {"attacker": None, "blocker": []}}
                 if k["damage"] > 0:
                     combat["damage"] += k["damage"]
                     if self.active_player().damage(k["damage"]) < 1:
@@ -249,9 +244,9 @@ class Game:
         self.start_phase()
 
     def ending_the_game(self, winner) -> NoReturn:
-        # winner.ending_the_game(True)
+        winner.ending_the_game(True)
         for user in self.other_users(winner):
-            # user.ending_the_game(False)
+            user.ending_the_game(False)
             pass
 
     def get_hands(self, user, type: Type[C] = Card) -> List[C]:

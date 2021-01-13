@@ -72,8 +72,9 @@ class RandomPlayer(AI):
                 self.game.get_indexed_hands(self, Creature),
                 self.game.get_remain_mana().count()
             )
-            self.selected = playable[random.randint(0, playable.__len__() - 1)]
-            self.selected = sorted(self.selected, key=lambda x: x[0], reverse=True)
+            if playable.__len__() > 0:
+                self.selected = playable[random.randint(0, playable.__len__() - 1)]
+                self.selected = sorted(self.selected, key=lambda x: x[0], reverse=True)
             self.receive_priority()
 
     def declare_attackers_step(self) -> NoReturn:

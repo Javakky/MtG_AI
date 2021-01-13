@@ -60,8 +60,14 @@ class AI(ConsoleUser):
 
 def all_playable_creatures(creatures: List[Tuple[int, Creature]], remain_mana: int) \
         -> List[List[Tuple[int, Creature]]]:
-    playable_creatures: List[List[Tuple[int, Creature]]] = combinations_all(creatures, 1)
-    for creatures in playable_creatures:
-        if sum([x[1].mana_cost.count() for x in creatures]) > remain_mana:
-            playable_creatures.remove(creatures)
+    playable_creatures: List[List[Tuple[int, Creature]]] = combinations_all(
+        creatures,
+        1,
+        lambda c: sum([creature[1].mana_cost.count() for creature in c]) <= remain_mana
+    )
+    # print("remain_mana: " + str(remain_mana))
+    # json_data = []
+    # for i in playable_creatures:
+    #     json_data.append({"indexes": get_keys_tuple_list(i), "costs": [i.mana_cost.count() for i in get_values_tuple_list(i)]})
+    # print("playables: " + json.dumps(json_data))
     return playable_creatures
