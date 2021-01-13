@@ -45,7 +45,6 @@ class PA(AI):
                 SampleGame(self, Timing.SELECT_BLOCKER)
             ).next_params
             if "land" in params:
-                print("land: " + str(params["land"]))
                 self.game.play_land(cast(int, params["land"]))
                 return
         if self.selected_spell:
@@ -64,7 +63,6 @@ class PA(AI):
             if "spell" in params:
                 self.selected = cast(List[Tuple[int, Creature]], params["spell"])
                 self.selected = sorted(self.selected, key=lambda x: x[0], reverse=True)
-                print("spell: " + json.dumps(get_keys_tuple_list(self.selected)))
             self.receive_priority()
 
     def declare_attackers_step(self) -> NoReturn:
@@ -72,7 +70,6 @@ class PA(AI):
             SampleGame(self, Timing.AFTER_START)
         ).next_params
         if "attacker" in params:
-            print("attacker: " + json.dumps(params["attacker"]))
             self.game.declare_attackers(cast(List[int], params["attacker"]))
         else:
             self.game.declare_attackers([])
@@ -86,7 +83,6 @@ class PA(AI):
             game
         ).next_params
         if "blocker" in params:
-            print("attacker: " + json.dumps(params["blocker"]))
             blockers: List[List[int]] = cast(List[List[int]], params["blocker"])
             for i in range(blockers.__len__()):
                 self.game.declare_blokers(i, blockers[i])
@@ -96,7 +92,4 @@ class PA(AI):
         pass
 
     def ending_the_game(self, win: bool) -> NoReturn:
-        print("経過ターン数: " + str(self.game.turn))
-        print("相手のライフ: " + str(self.game.get_life(self)))
-        print("自分のライフ: " + str(self.game.get_life(self.game.non_self_users(self)[0])))
-        self.print_field(True)
+        pass

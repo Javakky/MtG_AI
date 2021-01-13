@@ -1,12 +1,14 @@
 import sys
-from typing import NoReturn
 
 from ai.expert import Expert
 from ai.montecalro.pa import PA
+from ai.random import RandomPlayer
+from ai.reduced import Reduced
 from games.game import Game
+from util.log import write
 
 
-def main() -> NoReturn:
+def main():
     sys.setrecursionlimit(10 ** 9)
     game: Game = Game()
     user1 = Expert(game, "ai_1")
@@ -16,15 +18,22 @@ def main() -> NoReturn:
 
 
 if __name__ == '__main__':
-    winner = {"ai_1": 0, "ai_2": 0}
-    reason = {"LO": 0, "DAMAGE": 0}
-    for i in range(1):
-        tpl = main()
-        winner[tpl[0]] += 1
-        reason[tpl[1]] += 1
-        if i % 100 == 0: print(i)
-    print()
-    print("ai_1：" + str(winner["ai_1"]))
-    print("ai_2：" + str(winner["ai_2"]))
-    print("LO：" + str(reason["LO"]))
-    print("DAMAGE：" + str(reason["DAMAGE"]))
+    result = []
+    for j in range(10000):
+        winner = {"ai_1": 0, "ai_2": 0}
+        reason = {"LO": 0, "DAMAGE": 0}
+        for i in range(1000):
+            tpl = main()
+            winner[tpl[0]] += 1
+            reason[tpl[1]] += 1
+        message: str = "ai_1：" + str(winner["ai_1"]) + "\n" + "ai_2：" \
+                       + str(winner["ai_2"]) + "\n" \
+                       + "LO：" + str(reason["LO"]) + "\n" \
+                       + "DAMAGE：" + str(reason["DAMAGE"])
+        result.append(winner["ai_1"] / (winner["ai_1"] + winner["ai_2"]) * 100)
+        write("", message, "exp_pa_game/")
+        print(str(j))
+    message: str = ""
+    for i in result:
+        message += str(i) + "%" + "\n"
+    write("exp_pa_result", message)
