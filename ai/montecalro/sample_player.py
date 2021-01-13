@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, NoReturn
 
 from games.cards.card import Card
 from games.cards.permanent import Permanent
@@ -11,21 +11,24 @@ class SamplePlayer(Player):
         super().__init__(user.get_deck())
         self.user: bool = player
         self.life = user.game.get_life(user)
-        self.init_graveyards(user.game.get_graveyards(user))
         self.init_fields(user.game.get_fields(user))
+        self.init_graveyards(user.game.get_graveyards(user))
         if self.user:
             self.init_hands(user.game.get_hands(user))
         else:
             self.first_draw()
 
-    def init_hands(self, hands: List[Card]):
+    def init_hands(self, hands: List[Card]) -> NoReturn:
         for card in hands:
             self.hand.append(self.library.pop(card.name))
 
-    def init_graveyards(self, graveyards: List[Card]):
+    def init_graveyards(self, graveyards: List[Card]) -> NoReturn:
         for card in graveyards:
             self.graveyard.append(self.library.pop(card.name))
 
-    def init_fields(self, fields: List[Permanent]):
+    def init_fields(self, fields: List[Permanent]) -> NoReturn:
         for card in fields:
-            self.field.append(self.library.pop(card.name))
+            tmp: Permanent = self.library.pop(card.name)
+            if not card.untapped:
+                tmp.tap()
+            self.field.append(tmp)

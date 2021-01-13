@@ -107,7 +107,7 @@ class Player:
 
     def get_fields(self, indexes: List[int] = None, type: Type[P] = Permanent) -> List[P]:
         if indexes is None:
-            return self.field.get_cards(type)
+            return self.field.get_cards(type=type)
         return self.field.get(indexes, type)
 
     def get_remain_mana(self) -> Mana:
