@@ -1,9 +1,12 @@
 from math import log
-from typing import Tuple, Optional, NoReturn, TypeVar
+from typing import Tuple, Optional, NoReturn, TypeVar, List
 
 import numpy
 
+from util.montecalro.config import Config
 from util.montecalro.state import State
+
+C = 1.5
 
 
 class Node:
@@ -40,7 +43,7 @@ class Node:
         def ucb1_values() -> Tuple[float]:
             t = sum([i.n for i in self.child_nodes])
             return tuple(
-                -child.w / child.n + 2 * (2 * log(t) / child.n) ** 0.5
+                (child.w / child.n) + C * ((log(t) / child.n) ** 0.5)
                 for child in self.child_nodes
             )
 
@@ -56,11 +59,31 @@ class Node:
 N = TypeVar('N', bound=State)
 
 
-def monte_carlo_tree_search_next_action(state: N) -> N:
-    root_node = Node(state)
-    root_node.expand()
+class MCTS:
+    def __init__(self, config: Config):
+        self.config: Config = config
 
-    for _ in range(50000):
-        root_node.evaluate()
+    def determinization_monte_carlo_tree_search_next_action(self, state: N) -> N:
+        n: List[int] = [0 for i in range(len(state.legal_actions))]
+        for i in range(self.config.determinizations):
+            nexts: Optional[Tuple[Node]] = self.monte_carlo_tree_search(state).child_nodes
+            for j in range(nexts.__len__() if nexts is not None else 0):
+                n[j] += nexts[i].n
 
-    return state.legal_actions[numpy.array([x.n for x in root_node.child_nodes]).argmax()]
+        return state.legal_actions[
+            numpy.array([x for x in n]).argmax()
+        ]
+
+    def monte_carlo_tree_search_next_action(self, state: N) -> N:
+        return state.legal_actions[
+            numpy.array([x.n for x in self.monte_carlo_tree_search(state).child_nodes]).argmax()
+        ]
+
+    def monte_carlo_tree_search(self, state: N) -> Node:
+        root_node = Node(state)
+        root_node.expand()
+
+        for _ in range(self.config.simulations):
+            root_node.evaluate()
+
+        return root_node
