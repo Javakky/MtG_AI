@@ -19,13 +19,15 @@ def main():
 
 if __name__ == '__main__':
     result = []
-    for j in range(10000):
+    for j in range(100):
         winner = {"ai_1": 0, "ai_2": 0}
         reason = {"LO": 0, "DAMAGE": 0}
         for i in range(1000):
             tpl = main()
             winner[tpl[0]] += 1
             reason[tpl[1]] += 1
+            if i % 10 == 0:
+                print(i)
         message: str = "ai_1：" + str(winner["ai_1"]) + "\n" + "ai_2：" \
                        + str(winner["ai_2"]) + "\n" \
                        + "LO：" + str(reason["LO"]) + "\n" \
