@@ -30,7 +30,7 @@ if __name__ == '__main__':
                        + "LO：" + str(reason["LO"]) + "\n" \
                        + "DAMAGE：" + str(reason["DAMAGE"])
         result.append(winner["ai_1"] / (winner["ai_1"] + winner["ai_2"]) * 100)
-        write("", message, "rand_red_game/")
+        write("", message, "rand_red_game_2021-01-07/")
         print(str(j))
     message: str = ""
     for i in result:
