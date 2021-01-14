@@ -1,8 +1,7 @@
 import sys
 
-from ai.expert import Expert
+from ai.montecalro.mtg_config import MtGConfigBuilder
 from ai.montecalro.pa import PA
-from ai.random import RandomPlayer
 from ai.reduced import Reduced
 from games.game import Game
 from util.log import write
@@ -12,14 +11,14 @@ def main():
     sys.setrecursionlimit(10 ** 9)
     game: Game = Game()
     user1 = Reduced(game, "ai_1")
-    user2 = PA(game, "ai_2")
+    user2 = PA(game, "ai_2", MtGConfigBuilder().build())
     game.starting_the_game()
     return game.winner.name, game.reason
 
 
 if __name__ == '__main__':
     result = []
-    for j in range(100):
+    for j in range(10):
         winner = {"ai_1": 0, "ai_2": 0}
         reason = {"LO": 0, "DAMAGE": 0}
         for i in range(1000):
