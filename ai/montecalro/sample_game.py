@@ -4,6 +4,7 @@ from math import floor
 from typing import List, Tuple, Optional, Iterable, Dict
 
 from ai.ai import require_land, all_playable_creatures
+from ai.montecalro.mtg_config import MtGConfig
 from ai.montecalro.sample_player import SamplePlayer
 from ai.montecalro.timing import Timing
 from ai.reduced import Reduced
@@ -16,11 +17,8 @@ from util.util import get_keys_tuple_list, combinations_all
 
 
 class SampleGame(Game, State):
-    REWARD_DISCOUNT = 0.99
-    WIN_REWARD = 1
-    LOSE_REWARD = 0
 
-    def __init__(self, player: IUser, timing: Timing):
+    def __init__(self, player: IUser, timing: Timing, config: MtGConfig):
         super().__init__()
         game: Game = player.game
         self.reward: float = 0
@@ -36,6 +34,7 @@ class SampleGame(Game, State):
         self.tmp_blocker = copy.deepcopy(game.tmp_blocker)
         self.legal_action: Optional[List[SampleGame]] = None
         self.next_params: Dict[str, object] = {}
+        self.config: MtGConfig = config
         if game.winner is not None:
             self.reason = game.reason
             self.winner = game.winner
@@ -46,8 +45,8 @@ class SampleGame(Game, State):
 
     def ending_the_game(self, winner):
         self.ended = True
-        self.reward = (self.WIN_REWARD if winner == self.player else self.LOSE_REWARD) \
-                      * (self.REWARD_DISCOUNT ** floor(self.turn / 2))
+        self.reward = (self.config.win_reward if winner == self.player else self.config.lose_reward) \
+                      * (self.config.discount ** floor(self.turn / 2))
 
     @property
     def value(self) -> float:
@@ -60,7 +59,7 @@ class SampleGame(Game, State):
         return self.ended
 
     def next(self, game: 'SampleGame') -> 'SampleGame':
-        return SampleGame(game.player, game.now)
+        return SampleGame(game.player, game.now, game.config)
 
     def _play_spells(self, indexes: List[int]):
         for i in reversed(indexes):
@@ -83,7 +82,7 @@ class SampleGame(Game, State):
                     range(0, self.tmp_attacker.__len__() + 1), creatures.__len__())
                 nexts: List[SampleGame] = []
                 for t in p_b:
-                    next: SampleGame = SampleGame(self.player, Timing.SELECT_BLOCKER)
+                    next: SampleGame = SampleGame(self.player, Timing.SELECT_BLOCKER, self.config)
                     B: List[List[int]] = [[] for _ in range(self.tmp_attacker.__len__())]
                     for i in range(t.__len__()):
                         if t[i] == self.tmp_attacker.__len__():
@@ -97,7 +96,7 @@ class SampleGame(Game, State):
 
             elif self.now == Timing.SELECT_BLOCKER:
                 lands: List[Tuple[int, Land]] = self.get_indexed_hands(self.active_user, Land)
-                next: SampleGame = SampleGame(self.player, Timing.PLAY_LAND)
+                next: SampleGame = SampleGame(self.player, Timing.PLAY_LAND, self.config)
                 if lands.__len__() != 0:
                     next._play_land(lands[0][0])
                     next.next_params["land"] = lands[0][0]
@@ -109,21 +108,23 @@ class SampleGame(Game, State):
                     self.get_indexed_hands(self.active_user, Creature),
                     self.get_remain_mana().count()
                 )
-                nexts: List[SampleGame] = [SampleGame(self.player, Timing.PLAY_SPELL)]
+                nexts: List[SampleGame] = [SampleGame(self.player, Timing.PLAY_SPELL, self.config)]
                 for indexes in playable:
-                    next: SampleGame = SampleGame(self.player, Timing.PLAY_SPELL)
+                    next: SampleGame = SampleGame(self.player, Timing.PLAY_SPELL, self.config)
                     next._play_spells(get_keys_tuple_list(list(indexes)))
                     next.next_params["spell"] = list(indexes)
                     nexts.append(next)
                 self.legal_action = nexts
 
             elif self.now == Timing.PLAY_SPELL:
-                creatures: List[Tuple[int, Creature]] = self.get_indexed_fields(self.non_active_users()[0],
-                                                                                type=Creature)
+                creatures: List[Tuple[int, Creature]] = self.get_indexed_fields(
+                    self.non_active_users()[0],
+                    type=Creature
+                )
                 p_a: List[List[Tuple[int, Creature]]] = combinations_all(creatures)
                 nexts: List[SampleGame] = []
                 for attackers in p_a:
-                    next: SampleGame = SampleGame(self.player, Timing.SELECT_ATTACKER)
+                    next: SampleGame = SampleGame(self.player, Timing.SELECT_ATTACKER, self.config)
                     next._start_phase()
                     next._declare_attackers(get_keys_tuple_list(attackers))
                     next.next_params["attacker"] = get_keys_tuple_list(attackers)
@@ -135,7 +136,7 @@ class SampleGame(Game, State):
                 p_a: List[List[Tuple[int, Creature]]] = combinations_all(creatures)
                 nexts: List[SampleGame] = []
                 for attackers in p_a:
-                    next: SampleGame = SampleGame(self.player, Timing.SELECT_ATTACKER)
+                    next: SampleGame = SampleGame(self.player, Timing.SELECT_ATTACKER, self.config)
                     next._declare_attackers(get_keys_tuple_list(attackers))
                     next.next_params["attacker"] = get_keys_tuple_list(attackers)
                     nexts.append(next)

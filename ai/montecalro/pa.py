@@ -1,7 +1,7 @@
-import json
 from typing import List, Dict, NoReturn, cast, Tuple
 
 from ai.ai import AI, require_land
+from ai.montecalro.mtg_config import MtGConfig
 from ai.montecalro.sample_game import SampleGame
 from ai.montecalro.timing import Timing
 from deck.deck_list import get_sample_deck
@@ -9,16 +9,18 @@ from games.cards.card import Card
 from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
-from util.montecalro.mtcs import monte_carlo_tree_search_next_action
+from util.montecalro.mcts import MCTS
 from util.util import get_keys_tuple_list
 
 
 class PA(AI):
 
-    def __init__(self, game: Game, name: str):
+    def __init__(self, game: Game, name: str, config: MtGConfig):
         super().__init__(game, name)
         self.selected_spell: bool = False
         self.selected: List[Tuple[int, Creature]] = []
+        self.config: MtGConfig = config
+        self.mcts: MCTS = MCTS(config)
 
     def get_deck(self) -> List[Card]:
         return get_sample_deck()
@@ -41,8 +43,8 @@ class PA(AI):
 
     def receive_priority(self) -> NoReturn:
         if not self.game.played_land():
-            params: Dict[str, object] = monte_carlo_tree_search_next_action(
-                SampleGame(self, Timing.SELECT_BLOCKER)
+            params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
+                SampleGame(self, Timing.SELECT_BLOCKER, self.config)
             ).next_params
             if "land" in params:
                 self.game.play_land(cast(int, params["land"]))
@@ -57,8 +59,8 @@ class PA(AI):
                 self.game.pass_priority()
         else:
             self.selected_spell = True
-            params: Dict[str, object] = monte_carlo_tree_search_next_action(
-                SampleGame(self, Timing.PLAY_LAND)
+            params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
+                SampleGame(self, Timing.PLAY_LAND, self.config)
             ).next_params
             if "spell" in params:
                 self.selected = cast(List[Tuple[int, Creature]], params["spell"])
@@ -66,8 +68,8 @@ class PA(AI):
             self.receive_priority()
 
     def declare_attackers_step(self) -> NoReturn:
-        params: Dict[str, object] = monte_carlo_tree_search_next_action(
-            SampleGame(self, Timing.AFTER_START)
+        params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
+            SampleGame(self, Timing.AFTER_START, self.config)
         ).next_params
         if "attacker" in params:
             self.game.declare_attackers(cast(List[int], params["attacker"]))
@@ -78,9 +80,8 @@ class PA(AI):
         if self.game.tmp_attacker.__len__() == 0:
             self.game.combat_damage()
             return
-        game: SampleGame = SampleGame(self, Timing.SELECT_ATTACKER)
-        params: Dict[str, object] = monte_carlo_tree_search_next_action(
-            game
+        params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
+            SampleGame(self, Timing.SELECT_ATTACKER, self.config)
         ).next_params
         if "blocker" in params:
             blockers: List[List[int]] = cast(List[List[int]], params["blocker"])
