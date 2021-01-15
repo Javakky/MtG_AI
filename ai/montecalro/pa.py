@@ -17,6 +17,7 @@ class PA(AI):
 
     def __init__(self, game: Game, name: str, config: MtGConfig):
         super().__init__(game, name)
+        self.played_land: bool = False
         self.selected_spell: bool = False
         self.selected: List[Tuple[int, Creature]] = []
         self.config: MtGConfig = config
@@ -36,13 +37,15 @@ class PA(AI):
 
     def upkeep_step(self) -> NoReturn:
         self.selected_spell = False
+        self.played_land = False
         self.selected = []
 
     def draw_step(self, card: Card) -> NoReturn:
         pass
 
     def receive_priority(self) -> NoReturn:
-        if not self.game.played_land():
+        if not self.played_land:
+            self.played_land = True
             params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
                 SampleGame(self, Timing.SELECT_BLOCKER, self.config)
             ).next_params
