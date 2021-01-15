@@ -63,7 +63,9 @@ def debug_print_cards_of_index(tuples: List[Tuple[int, Card]]) -> NoReturn:
 
 
 def combinations_all(
-        target: List[T], start: int = 0, filter: Optional[Callable[[Tuple[T, ...]], bool]] = None
+        target: List[T],
+        start: int = 0,
+        filter: Optional[Callable[[Tuple[T, ...]], bool]] = None
 ) -> List[List[T]]:
     result: List[List[T]] = []
     for i in reversed(range(start, target.__len__() + 1)):

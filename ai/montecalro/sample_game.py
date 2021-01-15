@@ -3,8 +3,8 @@ from itertools import combinations_with_replacement
 from math import floor
 from typing import List, Tuple, Optional, Iterable, Dict
 
-from ai.ai import require_land, all_playable_creatures
-from ai.montecalro.mtg_config import MtGConfig, PlayLand
+from ai.ai import require_land, all_playable_pairs, maximam_playable_pairs
+from ai.montecalro.mtg_config import MtGConfig, PlayLand, DominatePruning
 from ai.montecalro.sample_player import SamplePlayer
 from ai.montecalro.timing import Timing
 from ai.reduced import Reduced
@@ -166,11 +166,20 @@ class SampleGame(Game, State):
             return nexts
 
     def legal_play_spell(self):
-        playable: List[List[Tuple[int, Creature]]] \
-            = all_playable_creatures(
-            self.get_indexed_hands(self.active_user, Creature),
-            self.get_remain_mana()
-        )
+        playable: List[List[Tuple[int, Creature]]] = []
+
+        if self.config.dominate_pruning == DominatePruning.PLAIN:
+            playable = all_playable_pairs(
+                self.get_indexed_hands(self.active_user, Creature),
+                self.get_remain_mana()
+            )
+
+        elif self.config.dominate_pruning == DominatePruning.PLUNING:
+            playable = maximam_playable_pairs(
+                self.get_indexed_hands(self.active_user, Creature),
+                self.get_remain_mana()
+            )
+
         nexts: List[SampleGame] = [SampleGame(self.player, Timing.PLAY_SPELL, self.config)]
         for indexes in playable:
             next: SampleGame = SampleGame(self.player, Timing.PLAY_SPELL, self.config)

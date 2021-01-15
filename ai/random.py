@@ -1,7 +1,7 @@
 import random
 from typing import List, Dict, Tuple, NoReturn
 
-from ai.ai import require_land, AI, all_playable_creatures
+from ai.ai import require_land, AI, all_playable_pairs
 from deck.deck_list import get_sample_deck
 from games.cards.card import Card
 from games.cards.creature import Creature
@@ -68,7 +68,7 @@ class RandomPlayer(AI):
                 self.game.pass_priority()
         else:
             self.selected_spell = True
-            playable: List[List[Tuple[int, Creature]]] = all_playable_creatures(
+            playable: List[List[Tuple[int, Creature]]] = all_playable_pairs(
                 self.game.get_indexed_hands(self, Creature),
                 self.game.get_remain_mana()
             )
