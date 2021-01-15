@@ -83,6 +83,9 @@ class MCTS:
         root_node = Node(state)
         root_node.expand()
 
+        if root_node.child_nodes.__len__() <= 1:
+            return root_node
+
         for _ in range(self.config.simulations):
             root_node.evaluate()
 

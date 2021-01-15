@@ -2,7 +2,8 @@ import sys
 from typing import NoReturn
 
 from ai.expert import Expert
-from ai.random import RandomPlayer
+from ai.montecalro.mtg_config import MtGConfigBuilder, PlayLand
+from ai.montecalro.pa import PA
 from games.game import Game
 
 
@@ -10,7 +11,7 @@ def main() -> NoReturn:
     sys.setrecursionlimit(10 ** 9)
     game: Game = Game()
     user1 = Expert(game, "ai_1")
-    user2 = RandomPlayer(game, "ai_2")
+    user2 = PA(game, "ai_2", MtGConfigBuilder().set_play_land(PlayLand.PLAIN).build())
     game.starting_the_game()
     return game.winner.name, game.reason
 
@@ -20,7 +21,7 @@ if __name__ == '__main__':
     for j in range(1):
         winner = {"ai_1": 0, "ai_2": 0}
         reason = {"LO": 0, "DAMAGE": 0}
-        for i in range(1000):
+        for i in range(1):
             tpl = main()
             winner[tpl[0]] += 1
             reason[tpl[1]] += 1
