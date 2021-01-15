@@ -10,11 +10,17 @@ class MtGConfig(Config):
         self.win_reward: int = builder.win_reward
         self.lose_reward: int = builder.lose_reward
         self.play_land: PlayLand = builder.play_land
+        self.dominate_pruning: DominatePruning = builder.dominate_pruning
 
 
 class PlayLand(Enum):
     PLAIN = auto()
-    PLUNING = auto
+    PLUNING = auto()
+
+
+class DominatePruning(Enum):
+    PLAIN = auto()
+    PLUNING = auto()
 
 
 class MtGConfigBuilder(ConfigBuilder):
@@ -24,6 +30,7 @@ class MtGConfigBuilder(ConfigBuilder):
         self.win_reward = 1
         self.lose_reward = 0
         self.play_land: PlayLand = PlayLand.PLUNING
+        self.dominate_pruning: DominatePruning = DominatePruning.PLAIN
 
     def set_discount(self, value: int) -> 'MtGConfigBuilder':
         self.discount = value
@@ -39,6 +46,10 @@ class MtGConfigBuilder(ConfigBuilder):
 
     def set_play_land(self, value: PlayLand):
         self.play_land = value
+        return self
+
+    def set_dominate_pruning(self, value: DominatePruning):
+        self.dominate_pruning = value
         return self
 
     def build(self) -> 'MtGConfig':

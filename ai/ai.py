@@ -58,7 +58,9 @@ class AI(ConsoleUser):
         self.game.assign_damage(attacker, blockers, find_damage_destroyable_max_cost_assign(point, _b))
 
 
-def all_playable_creatures(creatures: List[Tuple[int, Creature]], remain_mana: int) \
+def all_playable_pairs(
+        creatures: List[Tuple[int, Creature]], remain_mana: int
+) \
         -> List[List[Tuple[int, Creature]]]:
     playable_creatures: List[List[Tuple[int, Creature]]] = combinations_all(
         creatures,
@@ -66,3 +68,22 @@ def all_playable_creatures(creatures: List[Tuple[int, Creature]], remain_mana: i
         lambda c: sum([creature[1].mana_cost.count() for creature in c]) <= remain_mana
     )
     return playable_creatures
+
+
+def maximam_playable_pairs(creatures: List[Tuple[int, Creature]], remain_mana: int) \
+        -> List[List[Tuple[int, Creature]]]:
+    playable_pairs: List[List[Tuple[int, Creature]]] = all_playable_pairs(creatures, remain_mana)
+
+    result: List[List[Tuple[int, Creature]]] = []
+
+    for pair in playable_pairs:
+        for r in result:
+            for creature in pair:
+                if creature not in r:
+                    break
+            else:
+                break
+        else:
+            result.append(pair)
+
+    return result
