@@ -21,7 +21,7 @@ if __name__ == '__main__':
     for j in range(100):
         winner = {"ai_1": 0, "ai_2": 0}
         reason = {"LO": 0, "DAMAGE": 0}
-        for i in range(1000):
+        for i in range(100):
             tpl = main()
             winner[tpl[0]] += 1
             reason[tpl[1]] += 1

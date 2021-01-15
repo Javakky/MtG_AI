@@ -67,8 +67,8 @@ class MCTS:
         n: List[int] = [0 for i in range(len(state.legal_actions))]
         for i in range(self.config.determinizations):
             nexts: Optional[Tuple[Node]] = self.monte_carlo_tree_search(state).child_nodes
-            for j in range(nexts.__len__() if nexts is not None else 0):
-                n[j] += nexts[i].n
+            for j in range(nexts.__len__()):
+                n[j] += nexts[j].n
 
         return state.legal_actions[
             numpy.array([x for x in n]).argmax()
