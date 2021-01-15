@@ -4,7 +4,7 @@ from math import floor
 from typing import List, Tuple, Optional, Iterable, Dict
 
 from ai.ai import require_land, all_playable_creatures
-from ai.montecalro.mtg_config import MtGConfig
+from ai.montecalro.mtg_config import MtGConfig, PlayLand
 from ai.montecalro.sample_player import SamplePlayer
 from ai.montecalro.timing import Timing
 from ai.reduced import Reduced
@@ -95,26 +95,10 @@ class SampleGame(Game, State):
                 self.legal_action = nexts
 
             elif self.now == Timing.SELECT_BLOCKER:
-                lands: List[Tuple[int, Land]] = self.get_indexed_hands(self.active_user, Land)
-                next: SampleGame = SampleGame(self.player, Timing.PLAY_LAND, self.config)
-                if lands.__len__() != 0:
-                    next._play_land(lands[0][0])
-                    next.next_params["land"] = lands[0][0]
-                self.legal_action = [next]
+                self.legal_action = self.legal_play_land()
 
             elif self.now == Timing.PLAY_LAND:
-                playable: List[List[Tuple[int, Creature]]] \
-                    = all_playable_creatures(
-                    self.get_indexed_hands(self.active_user, Creature),
-                    self.get_remain_mana().count()
-                )
-                nexts: List[SampleGame] = [SampleGame(self.player, Timing.PLAY_SPELL, self.config)]
-                for indexes in playable:
-                    next: SampleGame = SampleGame(self.player, Timing.PLAY_SPELL, self.config)
-                    next._play_spells(get_keys_tuple_list(list(indexes)))
-                    next.next_params["spell"] = list(indexes)
-                    nexts.append(next)
-                self.legal_action = nexts
+                self.legal_action = self.legal_play_spell()
 
             elif self.now == Timing.PLAY_SPELL:
                 creatures: List[Tuple[int, Creature]] = self.get_indexed_fields(
@@ -153,7 +137,7 @@ class SampleGame(Game, State):
         if self.now == Timing.PLAY_LAND:
             self.active_user.receive_priority()
         elif self.now == Timing.PLAY_SPELL:
-            self.pass_priority()
+            self.playout_play_spell()
         elif self.now == Timing.SELECT_ATTACKER:
             self.non_active_users()[0].declare_blockers_step(self.tmp_attacker)
         elif self.now == Timing.SELECT_BLOCKER:
@@ -161,3 +145,34 @@ class SampleGame(Game, State):
         if self.ended:
             return self.reward
         raise NotImplementedError
+
+    def legal_play_land(self) -> List['SampleGame']:
+        nexts: List[SampleGame] = []
+        lands: List[Tuple[int, Land]] = self.get_indexed_hands(self.active_user, Land)
+        if lands.__len__() != 0:
+            next: SampleGame = SampleGame(self.player, Timing.PLAY_LAND, self.config)
+            next._play_land(lands[0][0])
+            next.next_params["land"] = lands[0][0]
+            nexts.append(next)
+
+        if self.config.play_land == PlayLand.PLAIN or lands.__len__() == 0:
+            nexts.append(SampleGame(self.player, Timing.PLAY_LAND, self.config))
+
+        return nexts
+
+    def legal_play_spell(self):
+        playable: List[List[Tuple[int, Creature]]] \
+            = all_playable_creatures(
+            self.get_indexed_hands(self.active_user, Creature),
+            self.get_remain_mana().count()
+        )
+        nexts: List[SampleGame] = [SampleGame(self.player, Timing.PLAY_SPELL, self.config)]
+        for indexes in playable:
+            next: SampleGame = SampleGame(self.player, Timing.PLAY_SPELL, self.config)
+            next._play_spells(get_keys_tuple_list(list(indexes)))
+            next.next_params["spell"] = list(indexes)
+            nexts.append(next)
+        return nexts
+
+    def playout_play_spell(self):
+        self.pass_priority()
