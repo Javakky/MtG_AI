@@ -62,12 +62,13 @@ def debug_print_cards_of_index(tuples: List[Tuple[int, Card]]) -> NoReturn:
         print_cards_of_index(tuples)
 
 
-def combinations_all(target: List[T], start: int = 0, filter: Optional[Callable[[Tuple[T, ...]], bool]] = None) -> List[
-    List[T]]:
+def combinations_all(
+        target: List[T], start: int = 0, filter: Optional[Callable[[Tuple[T, ...]], bool]] = None
+) -> List[List[T]]:
     result: List[List[T]] = []
     for i in reversed(range(start, target.__len__() + 1)):
         comb: Iterator[Tuple[T, ...]] = combinations(target, i)
         for c in comb:
-            if filter is None or filter(c):
+            if (filter is None) or filter(c):
                 result.append(list(c))
     return result

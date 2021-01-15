@@ -164,7 +164,7 @@ class SampleGame(Game, State):
         playable: List[List[Tuple[int, Creature]]] \
             = all_playable_creatures(
             self.get_indexed_hands(self.active_user, Creature),
-            self.get_remain_mana().count()
+            self.get_remain_mana()
         )
         nexts: List[SampleGame] = [SampleGame(self.player, Timing.PLAY_SPELL, self.config)]
         for indexes in playable:
