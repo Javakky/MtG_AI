@@ -70,7 +70,7 @@ class RandomPlayer(AI):
             self.selected_spell = True
             playable: List[List[Tuple[int, Creature]]] = all_playable_creatures(
                 self.game.get_indexed_hands(self, Creature),
-                self.game.get_remain_mana().count()
+                self.game.get_remain_mana()
             )
             if playable.__len__() > 0:
                 self.selected = playable[random.randint(0, playable.__len__() - 1)]

@@ -73,9 +73,8 @@ class Battlefield(CardHolder):
             result = tmp
         return result
 
-    def get_remain_mana(self) -> Mana:
-        mana: Mana = Mana()
-        for permanent in self.get_cards(type=ManaBase):
-            if isinstance(permanent, ManaBase) and permanent.untapped:
-                mana += permanent.mana
+    def get_remain_mana(self) -> int:
+        mana: int = 0
+        for permanent in self.get_cards(True, ManaBase):
+            mana += permanent.mana.count()
         return mana

@@ -110,7 +110,7 @@ class Player:
             return self.field.get_cards(type=type)
         return self.field.get(indexes, type)
 
-    def get_remain_mana(self) -> Mana:
+    def get_remain_mana(self) -> int:
         return self.field.get_remain_mana()
 
     def get_life(self) -> int:

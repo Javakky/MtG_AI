@@ -46,9 +46,9 @@ class Reduced(AI):
     def receive_priority(self) -> NoReturn:
         if self.play_land():
             return
-        remain_mana: Mana = self.game.get_remain_mana()
+        remain_mana: int = self.game.get_remain_mana()
         creatures: List[Tuple[int, Creature]] = list(filter(
-            lambda x: (x[1].mana_cost.count() <= remain_mana.count()),
+            lambda x: (x[1].mana_cost.count() <= remain_mana),
             self.game.get_indexed_hands(self, Creature)))
         lands: List[Tuple[int, Land]] = self.game.get_indexed_fields(self, True, type=Land)
         if creatures.__len__() > 0:

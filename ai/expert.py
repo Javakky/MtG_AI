@@ -85,9 +85,9 @@ def find_pair_exchanged_low_cost_creature(p_A: Creature, P_B: List[Tuple[int, Cr
 
 
 def maximum_playable_creature_count_enough_land(creatures: List[Creature], lands_of_hands: List[Land],
-                                                remain_mana: Mana) -> int:
+                                                remain_mana: int) -> int:
     land_mana: Mana = Mana([]) if lands_of_hands.__len__() == 0 else lands_of_hands[0].mana
-    remain_mana_count: int = remain_mana.count() + land_mana.count()
+    remain_mana_count: int = remain_mana + land_mana.count()
     for i in reversed(range(1, creatures.__len__() + 1)):
         comb: Iterator[Tuple[Creature, ...]] = combinations(creatures, i)
         for tuple in comb:
@@ -176,11 +176,11 @@ class Expert(AI):
             return
         creatures: List[Tuple[int, Creature]] = self.game.get_indexed_hands(self, Creature)
         lands: List[Tuple[int, Land]] = self.game.get_indexed_fields(self, True, type=Land)
-        remain_mana: Mana = self.game.get_remain_mana()
+        remain_mana: int = self.game.get_remain_mana()
         most_large_cost_creature: Optional[Creature] = None
         creature_index: int = -1
         for tpl in creatures:
-            if tpl[1].mana_cost.count() <= remain_mana.count() and \
+            if tpl[1].mana_cost.count() <= remain_mana and \
                     (most_large_cost_creature is None
                      or most_large_cost_creature.mana_cost.count() < tpl[1].mana_cost.count()):
                 most_large_cost_creature = cast(Creature, tpl[1])

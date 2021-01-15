@@ -281,7 +281,7 @@ class Game:
                 result.append((i, cards[i]))
         return result
 
-    def get_remain_mana(self) -> Mana:
+    def get_remain_mana(self) -> int:
         return self.players[self.active_user].get_remain_mana()
 
     def get_life(self, user) -> int:
