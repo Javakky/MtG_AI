@@ -147,18 +147,22 @@ class SampleGame(Game, State):
         raise NotImplementedError
 
     def legal_play_land(self) -> List['SampleGame']:
-        nexts: List[SampleGame] = []
-        lands: List[Tuple[int, Land]] = self.get_indexed_hands(self.active_user, Land)
-        if lands.__len__() != 0:
+        if self.config.play_land == PlayLand.PLUNING:
+            lands: List[Tuple[int, Land]] = self.get_indexed_hands(self.active_user, Land)
             next: SampleGame = SampleGame(self.player, Timing.PLAY_LAND, self.config)
-            next._play_land(lands[0][0])
-            next.next_params["land"] = lands[0][0]
-            nexts.append(next)
+            if lands.__len__() != 0:
+                next._play_land(lands[0][0])
+                next.next_params["land"] = lands[0][0]
+            return [next]
 
-        if self.config.play_land == PlayLand.PLAIN or lands.__len__() == 0:
-            nexts.append(SampleGame(self.player, Timing.PLAY_LAND, self.config))
-
-        return nexts
+        if self.config.play_land == PlayLand.PLAIN:
+            lands: List[Tuple[int, Land]] = self.get_indexed_hands(self.active_user, Land)
+            nexts: List[SampleGame] = [SampleGame(self.player, Timing.PLAY_LAND, self.config)]
+            if lands.__len__() != 0:
+                next: SampleGame = SampleGame(self.player, Timing.PLAY_LAND, self.config)
+                next._play_land(lands[0][0])
+                next.next_params["land"] = lands[0][0]
+            return nexts
 
     def legal_play_spell(self):
         playable: List[List[Tuple[int, Creature]]] \
