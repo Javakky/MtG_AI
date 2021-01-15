@@ -49,6 +49,7 @@ class PA(AI):
             if "land" in params:
                 self.game.play_land(cast(int, params["land"]))
                 return
+
         if self.selected_spell:
             if self.selected.__len__() > 0:
                 creature: Tuple[int, Creature] = self.selected.pop(0)

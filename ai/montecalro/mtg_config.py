@@ -23,21 +23,21 @@ class MtGConfigBuilder(ConfigBuilder):
         self.discount = 0.99
         self.win_reward = 1
         self.lose_reward = 0
-        self.play_land = PlayLand.PLUNING
+        self.play_land: PlayLand = PlayLand.PLUNING
 
-    def discount(self, value: int) -> 'MtGConfigBuilder':
+    def set_discount(self, value: int) -> 'MtGConfigBuilder':
         self.discount = value
         return self
 
-    def win_reward(self, value: int) -> 'MtGConfigBuilder':
+    def set_win_reward(self, value: int) -> 'MtGConfigBuilder':
         self.win_reward = value
         return self
 
-    def lose_reward(self, value: int) -> 'MtGConfigBuilder':
+    def set_lose_reward(self, value: int) -> 'MtGConfigBuilder':
         self.lose_reward = value
         return self
 
-    def play_land(self, value: PlayLand):
+    def set_play_land(self, value: PlayLand):
         self.play_land = value
         return self
 

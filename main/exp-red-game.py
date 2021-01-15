@@ -35,4 +35,4 @@ if __name__ == '__main__':
     message: str = ""
     for i in result:
         message += str(i) + "%" + "\n"
-    write("exp_red_result", message)
+    write("exp_red_result_", message)

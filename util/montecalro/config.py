@@ -14,15 +14,15 @@ class ConfigBuilder(metaclass=ABCMeta):
         self.determinizations: int = 40
         self.simulations: int = 250
 
-    def utc_c(self, value: float) -> 'ConfigBuilder':
+    def set_utc_c(self, value: float) -> 'ConfigBuilder':
         self.UTC_C = value
         return self
 
-    def determinizations(self, value: int) -> 'ConfigBuilder':
+    def set_determinizations(self, value: int) -> 'ConfigBuilder':
         self.determinizations = value
         return self
 
-    def simulations(self, value: int) -> 'ConfigBuilder':
+    def set_simulations(self, value: int) -> 'ConfigBuilder':
         self.simulations = value
         return self
 

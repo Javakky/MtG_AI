@@ -37,4 +37,4 @@ if __name__ == '__main__':
     message: str = ""
     for i in result:
         message += str(i) + "%" + "\n"
-    write("exp_pa_result", message)
+    write("exp_pa_result_", message)
