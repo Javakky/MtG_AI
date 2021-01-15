@@ -162,6 +162,7 @@ class SampleGame(Game, State):
                 next: SampleGame = SampleGame(self.player, Timing.PLAY_LAND, self.config)
                 next._play_land(lands[0][0])
                 next.next_params["land"] = lands[0][0]
+                nexts.append(next)
             return nexts
 
     def legal_play_spell(self):
