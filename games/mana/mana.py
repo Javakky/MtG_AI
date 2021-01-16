@@ -23,7 +23,7 @@ class Mana:
         self.symbols: List[Color] = symbols
         self.counts: Dict[Color, int] = {}
         self.count_all: Optional[int] = None
-        self.symbols.extend([Color.COLORLESS for i in range(num)])
+        self.symbols.extend([Color.COLORLESS for _ in range(num)])
 
     def __add__(self, manas: object) -> 'Mana':
         if isinstance(manas, Mana):

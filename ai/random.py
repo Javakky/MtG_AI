@@ -106,7 +106,7 @@ class RandomPlayer(AI):
             self.game.combat_damage()
             return
 
-        B: List[List[Tuple[int, Creature]]] = [[] for i in range(P_A.__len__())]
+        B: List[List[Tuple[int, Creature]]] = [[] for _ in range(P_A.__len__())]
 
         for b in P_B:
             rand = random.randint(0, P_A.__len__())

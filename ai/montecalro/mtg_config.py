@@ -1,5 +1,3 @@
-from enum import Enum, auto
-
 from util.montecalro.config import ConfigBuilder, Config
 
 
@@ -9,18 +7,8 @@ class MtGConfig(Config):
         self.discount: float = builder.discount
         self.win_reward: int = builder.win_reward
         self.lose_reward: int = builder.lose_reward
-        self.play_land: PlayLand = builder.play_land
-        self.dominate_pruning: DominatePruning = builder.dominate_pruning
-
-
-class PlayLand(Enum):
-    PLAIN = auto()
-    PLUNING = auto()
-
-
-class DominatePruning(Enum):
-    PLAIN = auto()
-    PLUNING = auto()
+        self.play_land: bool = builder.play_land
+        self.dominate_pruning: bool = builder.dominate_pruning
 
 
 class MtGConfigBuilder(ConfigBuilder):
@@ -29,8 +17,8 @@ class MtGConfigBuilder(ConfigBuilder):
         self.discount = 0.99
         self.win_reward = 1
         self.lose_reward = 0
-        self.play_land: PlayLand = PlayLand.PLUNING
-        self.dominate_pruning: DominatePruning = DominatePruning.PLAIN
+        self.play_land: bool = True
+        self.dominate_pruning: bool = False
 
     def set_discount(self, value: int) -> 'MtGConfigBuilder':
         self.discount = value
@@ -44,11 +32,11 @@ class MtGConfigBuilder(ConfigBuilder):
         self.lose_reward = value
         return self
 
-    def set_play_land(self, value: PlayLand):
+    def set_play_land(self, value: bool) -> 'MtGConfigBuilder':
         self.play_land = value
         return self
 
-    def set_dominate_pruning(self, value: DominatePruning):
+    def set_dominate_pruning(self, value: bool) -> 'MtGConfigBuilder':
         self.dominate_pruning = value
         return self
 

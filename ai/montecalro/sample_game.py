@@ -4,7 +4,7 @@ from math import floor
 from typing import List, Tuple, Optional, Iterable, Dict
 
 from ai.ai import require_land, all_playable_pairs, maximam_playable_pairs
-from ai.montecalro.mtg_config import MtGConfig, PlayLand, DominatePruning
+from ai.montecalro.mtg_config import MtGConfig
 from ai.montecalro.sample_player import SamplePlayer
 from ai.montecalro.timing import Timing
 from ai.reduced import Reduced
@@ -18,8 +18,11 @@ from util.util import get_keys_tuple_list, combinations_all
 
 class SampleGame(Game, State):
 
-    def __init__(self, player: IUser, timing: Timing, config: MtGConfig):
+    def __init__(self, player: IUser, timing: Timing, config: MtGConfig,
+                 wait_select_spells=None):
         super().__init__()
+        if wait_select_spells is None:
+            wait_select_spells = []
         game: Game = player.game
         self.reward: float = 0
         self.ended: bool = False
@@ -35,6 +38,7 @@ class SampleGame(Game, State):
         self.legal_action: Optional[List[SampleGame]] = None
         self.next_params: Dict[str, object] = {}
         self.config: MtGConfig = config
+        self.wait_select_spells: List[Tuple[int, Creature]] = wait_select_spells
         if game.winner is not None:
             self.reason = game.reason
             self.winner = game.winner
@@ -59,7 +63,7 @@ class SampleGame(Game, State):
         return self.ended
 
     def next(self, game: 'SampleGame') -> 'SampleGame':
-        return SampleGame(game.player, game.now, game.config)
+        return SampleGame(game.player, game.now, game.config, game.wait_select_spells)
 
     def _play_spells(self, indexes: List[int]):
         for i in reversed(indexes):
@@ -147,7 +151,7 @@ class SampleGame(Game, State):
         raise NotImplementedError
 
     def legal_play_land(self) -> List['SampleGame']:
-        if self.config.play_land == PlayLand.PLUNING:
+        if self.config.play_land:
             lands: List[Tuple[int, Land]] = self.get_indexed_hands(self.active_user, Land)
             next: SampleGame = SampleGame(self.player, Timing.PLAY_LAND, self.config)
             if lands.__len__() != 0:
@@ -155,38 +159,40 @@ class SampleGame(Game, State):
                 next.next_params["land"] = lands[0][0]
             return [next]
 
-        if self.config.play_land == PlayLand.PLAIN:
-            lands: List[Tuple[int, Land]] = self.get_indexed_hands(self.active_user, Land)
-            nexts: List[SampleGame] = [SampleGame(self.player, Timing.PLAY_LAND, self.config)]
-            if lands.__len__() != 0:
-                next: SampleGame = SampleGame(self.player, Timing.PLAY_LAND, self.config)
-                next._play_land(lands[0][0])
-                next.next_params["land"] = lands[0][0]
-                nexts.append(next)
-            return nexts
+        lands: List[Tuple[int, Land]] = self.get_indexed_hands(self.active_user, Land)
+        nexts: List[SampleGame] = [SampleGame(self.player, Timing.PLAY_LAND, self.config)]
+        if lands.__len__() != 0:
+            next: SampleGame = SampleGame(self.player, Timing.PLAY_LAND, self.config)
+            next._play_land(lands[0][0])
+            next.next_params["land"] = lands[0][0]
+            nexts.append(next)
+        return nexts
 
     def legal_play_spell(self):
-        playable: List[List[Tuple[int, Creature]]] = []
-
-        if self.config.dominate_pruning == DominatePruning.PLAIN:
-            playable = all_playable_pairs(
-                self.get_indexed_hands(self.active_user, Creature),
-                self.get_remain_mana()
-            )
-
-        elif self.config.dominate_pruning == DominatePruning.PLUNING:
-            playable = maximam_playable_pairs(
-                self.get_indexed_hands(self.active_user, Creature),
-                self.get_remain_mana()
-            )
+        playable: List[List[Tuple[int, Creature]]] = self.get_playable_pairs()
 
         nexts: List[SampleGame] = [SampleGame(self.player, Timing.PLAY_SPELL, self.config)]
+
         for indexes in playable:
             next: SampleGame = SampleGame(self.player, Timing.PLAY_SPELL, self.config)
             next._play_spells(get_keys_tuple_list(list(indexes)))
             next.next_params["spell"] = list(indexes)
             nexts.append(next)
+
         return nexts
 
     def playout_play_spell(self):
         self.pass_priority()
+
+    def get_playable_pairs(self):
+
+        if self.config.dominate_pruning:
+            return maximam_playable_pairs(
+                self.get_indexed_hands(self.active_user, Creature),
+                self.get_remain_mana()
+            )
+
+        return all_playable_pairs(
+            self.get_indexed_hands(self.active_user, Creature),
+            self.get_remain_mana()
+        )

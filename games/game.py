@@ -7,7 +7,6 @@ from games.cards.card import Card
 from games.cards.creature import Creature
 from games.cards.permanent import Permanent
 from games.player import Player
-from games.mana.mana import Mana
 from util.Exception import IllegalDamagePointsException
 from util.util import debug_print
 
@@ -19,7 +18,7 @@ class Game:
 
     def __init__(self):
         self.players: Dict[IUser, Player] = {}
-        self.play_first: IUser
+        self.play_first: Optional[IUser] = None
         self.active_user: Optional[IUser] = None
         self.tmp_attacker: List[int] = []
         self.tmp_blocker: Dict[int, List[int]] = {}
@@ -120,7 +119,6 @@ class Game:
     def _declare_attackers(self, indexes: List[int]) -> NoReturn:
         self.tmp_attacker = self.active_player().declare_attackers(indexes)
         self.tmp_blocker = {}
-        i: int = 0
         for attacker in self.tmp_attacker:
             self.tmp_blocker[attacker] = []
 
@@ -167,7 +165,7 @@ class Game:
             destroy_attackers: List[int] = []
             destroy_blockers: List[int] = []
             for k in self.destroy_creatures:
-                combat: Dict[str, Union[int, Dict[str, Optional[List[str]]]]] \
+                combat: Dict[str, Union[int, Dict[str, Optional[Union[str, List[str]]]]]] \
                     = {"damage": 0, "destroy": {"attacker": None, "blocker": []}}
                 if k["damage"] > 0:
                     combat["damage"] += k["damage"]

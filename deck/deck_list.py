@@ -1,5 +1,5 @@
 import random
-from typing import List
+from typing import List, cast
 
 from deck.card_pool import CARD_POOL
 from games.cards.card import Card
@@ -8,8 +8,8 @@ from util.util import flatten
 
 def get_random_deck() -> List[Card]:
     return flatten([
-        [CARD_POOL.creatures[random.randint(0, CARD_POOL.creatures.__len__() - 1)].clone() for x in range(23)],
-        CARD_POOL.get_card("島", 17)
+        [CARD_POOL.creatures[random.randint(0, CARD_POOL.creatures.__len__() - 1)].clone() for _ in range(23)],
+        cast(List[Card], CARD_POOL.get_card("島", 17))
     ])
 
 
