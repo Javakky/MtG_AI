@@ -64,7 +64,7 @@ class MCTS:
         self.config: Config = config
 
     def determinization_monte_carlo_tree_search_next_action(self, state: N) -> N:
-        n: List[int] = [0 for i in range(len(state.legal_actions))]
+        n: List[int] = [0 for _ in range(len(state.legal_actions))]
         for i in range(self.config.determinizations):
             nexts: Optional[Tuple[Node]] = self.monte_carlo_tree_search(state).child_nodes
             for j in range(nexts.__len__()):

@@ -1,7 +1,7 @@
 import sys
 
+from ai.montecalro.mcts_ai import MCTS_AI
 from ai.montecalro.mtg_config import MtGConfigBuilder
-from ai.montecalro.pa import PA
 from ai.reduced import Reduced
 from games.game import Game
 from util.log import write
@@ -11,7 +11,7 @@ def main():
     sys.setrecursionlimit(10 ** 9)
     game: Game = Game()
     user1 = Reduced(game, "ai_1")
-    user2 = PA(game, "ai_2", MtGConfigBuilder().build())
+    user2 = MCTS_AI(game, "ai_2", MtGConfigBuilder().build())
     game.starting_the_game()
     return game.winner.name, game.reason
 

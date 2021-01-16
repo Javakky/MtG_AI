@@ -13,7 +13,7 @@ from util.montecalro.mcts import MCTS
 from util.util import get_keys_tuple_list
 
 
-class PA(AI):
+class MCTS_AI(AI):
 
     def __init__(self, game: Game, name: str, config: MtGConfig):
         super().__init__(game, name)
@@ -53,15 +53,7 @@ class PA(AI):
                 self.game.play_land(cast(int, params["land"]))
                 return
 
-        if self.selected_spell:
-            if self.selected.__len__() > 0:
-                creature: Tuple[int, Creature] = self.selected.pop(0)
-                lands: List[Tuple[int, Land]] = self.game.get_indexed_fields(self, True, type=Land)
-                land_indexes: List[Tuple[int, Land]] = require_land(creature[1], lands)
-                self.game.cast_pay_cost(creature[0], get_keys_tuple_list(land_indexes))
-            else:
-                self.game.pass_priority()
-        else:
+        if not self.selected_spell:
             self.selected_spell = True
             params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
                 SampleGame(self, Timing.PLAY_LAND, self.config)
@@ -70,6 +62,15 @@ class PA(AI):
                 self.selected = cast(List[Tuple[int, Creature]], params["spell"])
                 self.selected = sorted(self.selected, key=lambda x: x[0], reverse=True)
             self.receive_priority()
+            return
+
+        if self.selected.__len__() > 0:
+            creature: Tuple[int, Creature] = self.selected.pop(0)
+            lands: List[Tuple[int, Land]] = self.game.get_indexed_fields(self, True, type=Land)
+            land_indexes: List[Tuple[int, Land]] = require_land(creature[1], lands)
+            self.game.cast_pay_cost(creature[0], get_keys_tuple_list(land_indexes))
+        else:
+            self.game.pass_priority()
 
     def declare_attackers_step(self) -> NoReturn:
         params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(

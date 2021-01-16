@@ -1,7 +1,7 @@
 from itertools import combinations
 from typing import List, Tuple, Union, NoReturn
 
-from client.console_user import ConsoleUser
+from client.console_user import ConsoleUser, ABCMeta
 from games.cards.creature import Creature
 from games.cards.land import Land
 from util.util import debug_print, debug_print_cards, index_with_default, combinations_all
@@ -33,7 +33,7 @@ def find_damage_destroyable_max_cost_assign(point: int, B: List[Tuple[int, Creat
                     max_cost = cost
                     max_count = count
                     result = list(c)
-    assign: List[int] = [0 for x in B]
+    assign: List[int] = [0 for _ in B]
     for r in result:
         index: Union[int, False] = index_with_default(B, r)
         if index is not False:
@@ -41,7 +41,7 @@ def find_damage_destroyable_max_cost_assign(point: int, B: List[Tuple[int, Creat
     return assign
 
 
-class AI(ConsoleUser):
+class AI(ConsoleUser, metaclass=ABCMeta):
     def play_land(self) -> bool:
         lands: List[Tuple[int, Land]] = self.game.get_indexed_hands(self, Land)
         if not self.game.played_land() and lands.__len__() > 0:

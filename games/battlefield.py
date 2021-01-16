@@ -3,7 +3,6 @@ from typing import List, Type, TypeVar, Union, Optional, NoReturn
 from games.card_holder import CardHolder
 from games.cards.mana_base import ManaBase
 from games.cards.permanent import Permanent
-from games.mana.mana import Mana
 from util.util import assert_instanceof
 
 P = TypeVar('P', bound=Permanent)
