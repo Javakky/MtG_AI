@@ -1,4 +1,4 @@
-from typing import List, NoReturn
+from typing import List, NoReturn, Optional
 
 from games.cards.card import Card
 from games.cards.permanent import Permanent

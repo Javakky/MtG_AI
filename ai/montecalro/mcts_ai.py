@@ -47,16 +47,38 @@ class MCTS_AI(AI):
         if not self.played_land:
             self.played_land = True
             params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
-                SampleGame(self, Timing.SELECT_BLOCKER, self.config)
+                SampleGame(self, Timing.SELECT_BLOCKER, self.config),
+                self.config
             ).next_params
             if "land" in params:
                 self.game.play_land(cast(int, params["land"]))
                 return
 
+        if self.config.binary_spell:
+            params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
+                SampleGame(
+                    self,
+                    Timing.PLAY_LAND,
+                    self.config,
+                    sorted(
+                       self.game.get_indexed_hands(self, Creature),
+                       key=lambda x: (x[1].power, x[1].mana_cost.count()),
+                       reverse=True
+                    )
+                ),
+                self.config
+            ).next_params
+            if "spell" in params:
+                self._play_spell(cast(List[Tuple[int, Creature]], params["spell"])[0])
+            else:
+                self.game.pass_priority()
+            return
+
         if not self.selected_spell:
             self.selected_spell = True
             params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
-                SampleGame(self, Timing.PLAY_LAND, self.config)
+                SampleGame(self, Timing.PLAY_LAND, self.config),
+                self.config
             ).next_params
             if "spell" in params:
                 self.selected = cast(List[Tuple[int, Creature]], params["spell"])
@@ -65,16 +87,19 @@ class MCTS_AI(AI):
             return
 
         if self.selected.__len__() > 0:
-            creature: Tuple[int, Creature] = self.selected.pop(0)
-            lands: List[Tuple[int, Land]] = self.game.get_indexed_fields(self, True, type=Land)
-            land_indexes: List[Tuple[int, Land]] = require_land(creature[1], lands)
-            self.game.cast_pay_cost(creature[0], get_keys_tuple_list(land_indexes))
+            self._play_spell(self.selected.pop(0))
         else:
             self.game.pass_priority()
 
+    def _play_spell(self, creature: Tuple[int, Creature]):
+        lands: List[Tuple[int, Land]] = self.game.get_indexed_fields(self, True, type=Land)
+        land_indexes: List[Tuple[int, Land]] = require_land(creature[1], lands)
+        self.game.cast_pay_cost(creature[0], get_keys_tuple_list(land_indexes))
+
     def declare_attackers_step(self) -> NoReturn:
         params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
-            SampleGame(self, Timing.AFTER_START, self.config)
+            SampleGame(self, Timing.AFTER_START, self.config),
+            self.config
         ).next_params
         if "attacker" in params:
             self.game.declare_attackers(cast(List[int], params["attacker"]))
@@ -86,7 +111,8 @@ class MCTS_AI(AI):
             self.game.combat_damage()
             return
         params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
-            SampleGame(self, Timing.SELECT_ATTACKER, self.config)
+            SampleGame(self, Timing.SELECT_ATTACKER, self.config),
+            self.config
         ).next_params
         if "blocker" in params:
             blockers: List[List[int]] = cast(List[List[int]], params["blocker"])

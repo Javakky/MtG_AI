@@ -13,13 +13,13 @@ from games.cards.land import Land
 from games.game import Game
 from games.i_user import IUser
 from util.montecalro.state import State
-from util.util import get_keys_tuple_list, combinations_all
+from util.util import get_keys_tuple_list, combinations_all, print_cards_of_index
 
 
 class SampleGame(Game, State):
 
     def __init__(self, player: IUser, timing: Timing, config: MtGConfig,
-                 wait_select_spells=None):
+                 wait_select_spells: Optional[List[Tuple[int, Creature]]] = None):
         super().__init__()
         if wait_select_spells is None:
             wait_select_spells = []
@@ -38,7 +38,7 @@ class SampleGame(Game, State):
         self.legal_action: Optional[List[SampleGame]] = None
         self.next_params: Dict[str, object] = {}
         self.config: MtGConfig = config
-        self.wait_select_spells: List[Tuple[int, Creature]] = wait_select_spells
+        self.wait_select_spells: List[Tuple[int, Creature]] = copy.deepcopy(wait_select_spells)
         if game.winner is not None:
             self.reason = game.reason
             self.winner = game.winner
@@ -141,7 +141,7 @@ class SampleGame(Game, State):
         if self.now == Timing.PLAY_LAND:
             self.active_user.receive_priority()
         elif self.now == Timing.PLAY_SPELL:
-            self.playout_play_spell()
+            self.pass_priority()
         elif self.now == Timing.SELECT_ATTACKER:
             self.non_active_users()[0].declare_blockers_step(self.tmp_attacker)
         elif self.now == Timing.SELECT_BLOCKER:
@@ -171,18 +171,47 @@ class SampleGame(Game, State):
     def legal_play_spell(self):
         playable: List[List[Tuple[int, Creature]]] = self.get_playable_pairs()
 
+        if self.config.binary_spell:
+            print("remain_mana: " + str(self.get_remain_mana()))
+            print("selecting!")
+            for i in range(playable.__len__()) :
+                print(str(i)+":")
+                print_cards_of_index(playable[i])
+            if self.wait_select_spells.__len__() == 0:
+                return [SampleGame(self.player, Timing.PLAY_SPELL, self.config)]
+            play: SampleGame = SampleGame(self.player, Timing.PLAY_LAND, self.config, self.wait_select_spells)
+            not_play: SampleGame = SampleGame(self.player, Timing.PLAY_LAND, self.config, self.wait_select_spells)
+            while play.wait_select_spells.__len__() > 0:
+                spell: Tuple[int, Creature] = play.wait_select_spells.pop(0)
+                not_play.wait_select_spells.pop(0)
+                for pair in playable:
+                    for target in pair:
+                        if spell[0] == target[0]:
+                            break
+                    else:
+                        continue
+                    break
+                else:
+                    continue
+                play._play_spells([spell[0]])
+                print("selected!")
+                print_cards_of_index([spell])
+                print()
+                play.next_params["spell"] = [spell]
+                break
+            else:
+                return [SampleGame(self.player, Timing.PLAY_SPELL, self.config)]
+            return [play, not_play]
+
         nexts: List[SampleGame] = [SampleGame(self.player, Timing.PLAY_SPELL, self.config)]
 
         for indexes in playable:
             next: SampleGame = SampleGame(self.player, Timing.PLAY_SPELL, self.config)
-            next._play_spells(get_keys_tuple_list(list(indexes)))
-            next.next_params["spell"] = list(indexes)
+            next._play_spells(get_keys_tuple_list(indexes))
+            next.next_params["spell"] = indexes
             nexts.append(next)
 
         return nexts
-
-    def playout_play_spell(self):
-        self.pass_priority()
 
     def get_playable_pairs(self):
 
