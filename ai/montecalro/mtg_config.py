@@ -9,6 +9,8 @@ class MtGConfig(Config):
         self.lose_reward: int = builder.lose_reward
         self.play_land: bool = builder.play_land
         self.dominate_pruning: bool = builder.dominate_pruning
+        self.binary_spell: bool = builder.binary_spell
+        self.interesting_order: bool = builder.interesting_order
 
 
 class MtGConfigBuilder(ConfigBuilder):
@@ -19,6 +21,8 @@ class MtGConfigBuilder(ConfigBuilder):
         self.lose_reward = 0
         self.play_land: bool = True
         self.dominate_pruning: bool = False
+        self.binary_spell: bool = False
+        self.interesting_order: bool = False
 
     def set_discount(self, value: int) -> 'MtGConfigBuilder':
         self.discount = value
@@ -38,6 +42,14 @@ class MtGConfigBuilder(ConfigBuilder):
 
     def set_dominate_pruning(self, value: bool) -> 'MtGConfigBuilder':
         self.dominate_pruning = value
+        return self
+
+    def set_binary_spell(self, value: bool) -> 'MtGConfigBuilder':
+        self.binary_spell = value
+        return self
+
+    def set_interesting_order(self, value: bool) -> 'MtGConfigBuilder':
+        self.interesting_order = value
         return self
 
     def build(self) -> 'MtGConfig':
