@@ -4,7 +4,6 @@ from ai.ai import AI
 from ai.reduced import Reduced
 from util.montecalro.config import ConfigBuilder, Config
 
-
 A = TypeVar('A', bound=AI)
 
 

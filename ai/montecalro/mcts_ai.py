@@ -10,7 +10,7 @@ from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
 from util.montecalro.mcts import MCTS
-from util.util import get_keys_tuple_list, print_cards
+from util.util import get_keys_tuple_list
 
 
 class MCTS_AI(AI):
@@ -61,9 +61,9 @@ class MCTS_AI(AI):
                     Timing.PLAY_LAND,
                     self.config,
                     sorted(
-                       self.game.get_indexed_hands(self, Creature),
-                       key=lambda x: (x[1].power, x[1].mana_cost.count()),
-                       reverse=True
+                        self.game.get_indexed_hands(self, Creature),
+                        key=lambda x: (x[1].power, x[1].mana_cost.count()),
+                        reverse=True
                     )
                 ),
                 self.config
