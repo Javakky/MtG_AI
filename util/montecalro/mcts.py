@@ -38,7 +38,7 @@ class Node:
         return value
 
     def expand(self) -> NoReturn:
-        self.child_nodes = tuple(Node(self.state.next(state), self.config) for state in self.state.legal_actions)
+        self.child_nodes = tuple(Node(state, self.config) for state in self.state.legal_actions)
 
     def next_child_node(self) -> 'Node':
         def ucb1_values() -> Tuple[float]:

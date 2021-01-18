@@ -10,7 +10,7 @@ from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
 from util.montecalro.mcts import MCTS
-from util.util import get_keys_tuple_list
+from util.util import get_keys_tuple_list, print_cards
 
 
 class MCTS_AI(AI):
