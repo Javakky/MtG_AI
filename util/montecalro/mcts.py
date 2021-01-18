@@ -1,4 +1,4 @@
-from math import log
+import math
 from typing import Tuple, Optional, NoReturn, TypeVar, List
 
 import numpy
@@ -42,9 +42,8 @@ class Node:
 
     def next_child_node(self) -> 'Node':
         def ucb1_values() -> Tuple[float]:
-            t = sum([i.n for i in self.child_nodes])
             return tuple(
-                (child.w / child.n) + self.config.UTC_C * ((log(t, 2) / child.n) ** 0.5)
+                (child.w / child.n) + self.config.UTC_C * (math.sqrt(math.log2(self.n) / child.n))
                 for child in self.child_nodes
             )
 
