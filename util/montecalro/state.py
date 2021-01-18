@@ -23,7 +23,7 @@ class State(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def next(self, obj: object) -> 'State':
+    def next(self) -> 'State':
         raise NotImplementedError
 
     @abstractmethod
@@ -31,5 +31,6 @@ class State(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def mine(self, state: 'State') -> int:
+    def switched(self) -> bool:
         raise NotImplementedError
+

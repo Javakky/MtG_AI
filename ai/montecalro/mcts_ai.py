@@ -10,7 +10,7 @@ from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
 from util.montecalro.mcts import MCTS
-from util.util import get_keys_tuple_list
+from util.util import get_keys_tuple_list, print_cards, print_cards_of_index
 
 
 class MCTS_AI(AI):
@@ -47,7 +47,7 @@ class MCTS_AI(AI):
         if not self.played_land:
             self.played_land = True
             params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
-                SampleGame(self, Timing.SELECT_BLOCKER, self.config),
+                SampleGame(self, Timing.BEFORE_LAND, self.config),
                 self.config
             ).next_params
             if "land" in params:

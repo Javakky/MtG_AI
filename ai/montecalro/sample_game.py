@@ -26,7 +26,8 @@ class SampleGame(Game, State):
     def __init__(self, player: IUser, timing: Timing, config: MtGConfig,
                  wait_select_spells: Optional[List[Tuple[int, Creature]]] = None,
                  player_fixed_ordering: Optional[List[Card]] = None,
-                 enemy_fixed_ordering: Optional[List[Card]] = None):
+                 enemy_fixed_ordering: Optional[List[Card]] = None,
+                 was_switch: bool = False):
         super().__init__()
         if wait_select_spells is None:
             wait_select_spells = []
@@ -41,6 +42,7 @@ class SampleGame(Game, State):
         self.legal_action: Optional[List[SampleGame]] = None
         self.next_params: Dict[str, object] = {}
         self.wait_select_spells: List[Tuple[int, Creature]] = copy.deepcopy(wait_select_spells)
+        self.was_switch: bool = was_switch
         if game.winner is not None:
             self.reason = game.reason
             self.winner = game.winner
@@ -81,18 +83,19 @@ class SampleGame(Game, State):
         return self.ended
 
     def next(self, now: Timing = None, wait_select_spells: bool = False,
-             config: Optional[MtGConfig] = None) -> 'SampleGame':
+             config: Optional[MtGConfig] = None, was_swich: bool = False) -> 'SampleGame':
         if now is None:
-            now = timing.next(self.now)
+            now = self.now
         if config is None:
             config = self.config
         return SampleGame(
-            self.player,
+            self.enemy if was_swich else self.player,
             now,
             config,
             self.wait_select_spells if wait_select_spells else None,
             self.player_order,
-            self.enemy_order
+            self.enemy_order,
+            was_swich
         )
 
     def _play_spells(self, indexes: List[int]):
@@ -116,7 +119,7 @@ class SampleGame(Game, State):
                     range(0, self.tmp_attacker.__len__() + 1), creatures.__len__())
                 nexts: List[SampleGame] = []
                 for t in p_b:
-                    next: SampleGame = self.next(Timing.SELECT_BLOCKER)
+                    next: SampleGame = self.next(Timing.SELECT_BLOCKER, was_swich=True)
                     B: List[List[int]] = [[] for _ in range(self.tmp_attacker.__len__())]
                     for i in range(t.__len__()):
                         if t[i] == self.tmp_attacker.__len__():
@@ -124,11 +127,11 @@ class SampleGame(Game, State):
                         B[t[i]].append(creatures[i][0])
                     for i in range(B.__len__()):
                         next.declare_blokers(i, B[i])
-                    next.next_params["blockers"] = B
+                    next.next_params["blocker"] = B
                     nexts.append(next)
                 self.legal_action = nexts
 
-            elif self.now == Timing.SELECT_BLOCKER:
+            elif self.now == Timing.SELECT_BLOCKER or self.now == Timing.BEFORE_LAND:
                 self.legal_action = self.legal_play_land()
 
             elif self.now == Timing.PLAY_LAND:
@@ -142,7 +145,7 @@ class SampleGame(Game, State):
                 p_a: List[List[Tuple[int, Creature]]] = combinations_all(creatures)
                 nexts: List[SampleGame] = []
                 for attackers in p_a:
-                    next: SampleGame = self.next(Timing.SELECT_ATTACKER)
+                    next: SampleGame = self.next(Timing.SELECT_ATTACKER, was_swich=True)
                     next._start_phase()
                     next._declare_attackers(get_keys_tuple_list(attackers))
                     next.next_params["attacker"] = get_keys_tuple_list(attackers)
@@ -162,10 +165,8 @@ class SampleGame(Game, State):
 
         return self.legal_action
 
-    def mine(self, state: 'SampleGame') -> bool:
-        if self.now == Timing.AFTER_START or self.now == Timing.PLAY_LAND:
-            return True
-        return False
+    def switched(self) -> bool:
+        return self.was_switch
 
     def playout(self) -> float:
         if self.now == Timing.PLAY_LAND:
@@ -183,16 +184,16 @@ class SampleGame(Game, State):
     def legal_play_land(self) -> List['SampleGame']:
         if self.config.play_land:
             lands: List[Tuple[int, Land]] = self.get_indexed_hands(self.active_user, Land)
-            next: SampleGame = self.next(Timing.PLAY_LAND)
+            next: SampleGame = self.next(Timing.PLAY_LAND, was_swich=(self.now == Timing.SELECT_BLOCKER))
             if lands.__len__() != 0:
                 next._play_land(lands[0][0])
                 next.next_params["land"] = lands[0][0]
             return [next]
 
         lands: List[Tuple[int, Land]] = self.get_indexed_hands(self.active_user, Land)
-        nexts: List[SampleGame] = [self.next(Timing.PLAY_LAND)]
+        nexts: List[SampleGame] = [self.next(Timing.PLAY_LAND, was_swich=True)]
         if lands.__len__() != 0:
-            next: SampleGame = self.next(Timing.PLAY_LAND)
+            next: SampleGame = self.next(Timing.PLAY_LAND, was_swich=True)
             next._play_land(lands[0][0])
             next.next_params["land"] = lands[0][0]
             nexts.append(next)
