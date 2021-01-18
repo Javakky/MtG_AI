@@ -1,10 +1,9 @@
-from typing import List, NoReturn, Optional
+from typing import List, NoReturn
 
 from games.cards.card import Card
 from games.cards.permanent import Permanent
 from games.i_user import IUser
 from games.player import Player
-from util.util import print_cards
 
 
 class SamplePlayer(Player):

@@ -1,8 +1,8 @@
 import copy
 import math
+import random
 from itertools import combinations_with_replacement
 from math import floor
-import random
 from typing import List, Tuple, Optional, Iterable, Dict, cast
 
 from ai.ai import require_land, all_playable_pairs, maximam_playable_pairs
@@ -12,14 +12,13 @@ from ai.montecalro.mtg_config import MtGConfig, MtGConfigBuilder
 from ai.montecalro.sample_player import SamplePlayer
 from ai.montecalro.timing import Timing
 from ai.random import RandomPlayer
-from ai.reduced import Reduced
 from games.cards.card import Card
 from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
 from games.i_user import IUser
 from util.montecalro.state import State
-from util.util import get_keys_tuple_list, combinations_all, print_cards_of_index, print_cards
+from util.util import get_keys_tuple_list, combinations_all
 
 
 class SampleGame(Game, State):
@@ -50,7 +49,8 @@ class SampleGame(Game, State):
         self.enemy: IUser = self.config.enemy_ai(self, "enemy")
         self.active_user = self.player if game.active_user == player else self.enemy
         self.players[self.player] = SamplePlayer(player, True, set_order=self.config.interesting_order)
-        self.players[self.enemy] = SamplePlayer(game.non_self_users(player)[0], False, set_order=self.config.interesting_order)
+        self.players[self.enemy] = SamplePlayer(game.non_self_users(player)[0], False,
+                                                set_order=self.config.interesting_order)
         self.player_order: Optional[List[Card]] = None
         self.enemy_order: Optional[List[Card]] = None
         if self.config.interesting_order:
@@ -59,8 +59,8 @@ class SampleGame(Game, State):
                 self.enemy_order = enemy_fixed_ordering
             else:
                 (self.player_order, self.enemy_order) = self.get_interesting_orders()
-        cast(SamplePlayer, self.players[self.player]).set_order(self.player_order)
-        cast(SamplePlayer, self.players[self.enemy]).set_order(self.enemy_order)
+            cast(SamplePlayer, self.players[self.player]).set_order(self.player_order)
+            cast(SamplePlayer, self.players[self.enemy]).set_order(self.enemy_order)
 
     def is_active(self) -> bool:
         return self.active_user == self.player
@@ -80,7 +80,8 @@ class SampleGame(Game, State):
     def end(self) -> bool:
         return self.ended
 
-    def next(self, now: Timing = None, wait_select_spells: bool = False, config: Optional[MtGConfig] = None) -> 'SampleGame':
+    def next(self, now: Timing = None, wait_select_spells: bool = False,
+             config: Optional[MtGConfig] = None) -> 'SampleGame':
         if now is None:
             now = timing.next(self.now)
         if config is None:
@@ -250,7 +251,7 @@ class SampleGame(Game, State):
     def get_interesting_orders(self) -> Tuple[List[Card], List[Card]]:
         player_ordering: List[Card] = copy.deepcopy(self.players[self.player].library.cards)
         enemy_ordering: List[Card] = copy.deepcopy(self.players[self.enemy].library.cards)
-        for _ in range(math.floor(self.config.simulations*0.05) + 1):
+        for _ in range(math.floor(self.config.simulations * 0.05) + 1):
             random.shuffle(player_ordering)
             random.shuffle(enemy_ordering)
             (play, no_play) = self.is_interesting_by_expert_rollout_model(player_ordering, enemy_ordering)
@@ -269,10 +270,10 @@ class SampleGame(Game, State):
             self, player_ordering: List[Card], enemy_ordering: List[Card]
     ) -> Tuple[Optional['SampleGame'], Optional['SampleGame']]:
         next: Timing = timing.next(self.now)
-        config: MtGConfig = MtGConfigBuilder()\
-            .set_player_ai(RandomPlayer)\
-            .set_enemy_ai(RandomPlayer)\
-            .set_interesting_order(True)\
+        config: MtGConfig = MtGConfigBuilder() \
+            .set_player_ai(RandomPlayer) \
+            .set_enemy_ai(RandomPlayer) \
+            .set_interesting_order(True) \
             .build()
         play = SampleGame(
             self.player, next, config,
@@ -304,11 +305,10 @@ class SampleGame(Game, State):
                 return None, None
             play._declare_attackers(attacker)
         if next == Timing.SELECT_BLOCKER:
-            blocker: List[List[Tuple[int, Creature]]]\
+            blocker: List[List[Tuple[int, Creature]]] \
                 = cast(Expert, game.non_active_users()[0])._declare_blockers_step(game.tmp_attacker)
             if blocker.__len__() == 0:
                 return None, None
             for i in range(blocker.__len__()):
                 play.declare_blokers(i, get_keys_tuple_list(blocker[i]))
         return play, no_play
-
