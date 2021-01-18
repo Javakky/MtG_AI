@@ -10,11 +10,12 @@ C = 1.5
 
 
 class Node:
-    def __init__(self, state):
+    def __init__(self, state, config: Config):
         self.state: State = state
         self.w: int = 0
         self.n: int = 0
         self.child_nodes: Optional[Tuple[Node]] = None
+        self.config: Config = config
 
     def evaluate(self) -> float:
         if self.state.end:
@@ -27,7 +28,7 @@ class Node:
             value = self.state.playout()
             self.w += value
             self.n += 1
-            if self.n == 40:
+            if self.n == self.config.expand:
                 self.expand()
         else:
             next: Node = self.next_child_node()
@@ -37,13 +38,13 @@ class Node:
         return value
 
     def expand(self) -> NoReturn:
-        self.child_nodes = tuple(Node(self.state.next(state)) for state in self.state.legal_actions)
+        self.child_nodes = tuple(Node(state, self.config) for state in self.state.legal_actions)
 
     def next_child_node(self) -> 'Node':
         def ucb1_values() -> Tuple[float]:
             t = sum([i.n for i in self.child_nodes])
             return tuple(
-                (child.w / child.n) + C * ((log(t) / child.n) ** 0.5)
+                (child.w / child.n) + self.config.UTC_C * ((log(t, 2) / child.n) ** 0.5)
                 for child in self.child_nodes
             )
 
@@ -63,10 +64,10 @@ class MCTS:
     def __init__(self, config: Config):
         self.config: Config = config
 
-    def determinization_monte_carlo_tree_search_next_action(self, state: N) -> N:
-        n: List[int] = [0 for i in range(len(state.legal_actions))]
+    def determinization_monte_carlo_tree_search_next_action(self, state: N, config: Config) -> N:
+        n: List[int] = [0 for _ in range(len(state.legal_actions))]
         for i in range(self.config.determinizations):
-            nexts: Optional[Tuple[Node]] = self.monte_carlo_tree_search(state).child_nodes
+            nexts: Optional[Tuple[Node]] = self.monte_carlo_tree_search(state, config).child_nodes
             for j in range(nexts.__len__()):
                 n[j] += nexts[j].n
 
@@ -74,13 +75,13 @@ class MCTS:
             numpy.array([x for x in n]).argmax()
         ]
 
-    def monte_carlo_tree_search_next_action(self, state: N) -> N:
+    def monte_carlo_tree_search_next_action(self, state: N, config: Config) -> N:
         return state.legal_actions[
-            numpy.array([x.n for x in self.monte_carlo_tree_search(state).child_nodes]).argmax()
+            numpy.array([x.n for x in self.monte_carlo_tree_search(state, config).child_nodes]).argmax()
         ]
 
-    def monte_carlo_tree_search(self, state: N) -> Node:
-        root_node = Node(state)
+    def monte_carlo_tree_search(self, state: N, config: Config) -> Node:
+        root_node = Node(state, config)
         root_node.expand()
 
         if root_node.child_nodes.__len__() <= 1:

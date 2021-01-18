@@ -12,7 +12,7 @@ def assert_instanceof(__o: object, __t: Type[T]) -> NoReturn:
         raise TypeError("不正な型: [要求された型 => " + __t.__name__ + ", 渡された型 => " + __o.__class__.__name__ + "]")
 
 
-def flatten(list: List[Union[T, List[T]]]) -> List[T]:
+def flatten(list: List[Union[List[T], T]]) -> List[T]:
     result: List[T] = []
     for element in list:
         if isinstance(element, List):

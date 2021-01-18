@@ -9,7 +9,6 @@ from ai.expert import exists_one_sidedly_destroied_pair, exists_exchanged_low_co
 from deck.card_pool import CARD_POOL
 from games.cards.creature import Creature
 from games.cards.land import Land
-from games.mana.mana import Mana
 from util.util import flatten
 
 
@@ -191,7 +190,7 @@ class ExpertTest(TestCase):
                     CARD_POOL.get_card("1/6(6)", 1),
                 ])),
                 cast(List[Land], flatten([CARD_POOL.get_card("島", 10)])),
-                Mana(num=5)
+                5
             )
         )
 

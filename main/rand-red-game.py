@@ -1,6 +1,5 @@
 import sys
 
-from ai.expert import Expert
 from ai.random import RandomPlayer
 from ai.reduced import Reduced
 from games.game import Game
