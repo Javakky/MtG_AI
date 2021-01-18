@@ -32,9 +32,9 @@ if __name__ == '__main__':
                        + "LO：" + str(reason["LO"]) + "\n" \
                        + "DAMAGE：" + str(reason["DAMAGE"])
         result.append(winner["ai_1"] / (winner["ai_1"] + winner["ai_2"]) * 100)
-        write("", message, "red_pa_game/")
+        write("", message, "red_ba_game/")
         print(str(j))
     message: str = ""
     for i in result:
         message += str(i) + "%" + "\n"
-    write("red_pa_result_", message)
+    write("red_ba_result_", message)

@@ -11,7 +11,7 @@ def main():
     sys.setrecursionlimit(10 ** 9)
     game: Game = Game()
     user1 = Expert(game, "ai_1")
-    user2 = PA(game, "ai_2", MtGConfigBuilder().build())
+    user2 = PA(game, "ai_2", MtGConfigBuilder().set_lose_reward(-1).build())
     game.starting_the_game()
     return game.winner.name, game.reason
 
@@ -32,9 +32,9 @@ if __name__ == '__main__':
                        + "LO：" + str(reason["LO"]) + "\n" \
                        + "DAMAGE：" + str(reason["DAMAGE"])
         result.append(winner["ai_1"] / (winner["ai_1"] + winner["ai_2"]) * 100)
-        write("", message, "exp_ba_game/")
+        write("", message, "exp_nl_game/")
         print(str(j))
     message: str = ""
     for i in result:
         message += str(i) + "%" + "\n"
-    write("exp_ba_result_", message)
+    write("exp_nl_result_", message)
