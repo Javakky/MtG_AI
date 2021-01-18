@@ -12,9 +12,6 @@ def main() -> NoReturn:
     game: Game = Game()
     user1 = Reduced(game, "ai_1")
     user2 = MCTS_AI(game, "ai_2", MtGConfigBuilder()
-                    .set_dominate_pruning(True)
-                    .set_binary_spell(True)
-                    .set_interesting_order(True)
                     .build()
                     )
     game.starting_the_game()
@@ -23,10 +20,10 @@ def main() -> NoReturn:
 
 if __name__ == '__main__':
     result = []
-    for j in range(10):
+    for j in range(1):
         winner = {"ai_1": 0, "ai_2": 0}
         reason = {"LO": 0, "DAMAGE": 0}
-        for i in range(10):
+        for i in range(1):
             tpl = main()
             winner[tpl[0]] += 1
             reason[tpl[1]] += 1

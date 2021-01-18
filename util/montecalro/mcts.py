@@ -32,13 +32,13 @@ class Node:
                 self.expand()
         else:
             next: Node = self.next_child_node()
-            value = next.evaluate() * (1 if next.state.mine(self.state) else -1)
+            value = next.evaluate() * (-1 if self.state.switched() else 1)
             self.w += value
             self.n += 1
         return value
 
     def expand(self) -> NoReturn:
-        self.child_nodes = tuple(Node(state, self.config) for state in self.state.legal_actions)
+        self.child_nodes = tuple(Node(state.next(), self.config) for state in self.state.legal_actions)
 
     def next_child_node(self) -> 'Node':
         def ucb1_values() -> Tuple[float]:
