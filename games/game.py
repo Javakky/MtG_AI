@@ -29,7 +29,6 @@ class Game:
 
     def set_user(self, user) -> NoReturn:
         self.players[user] = Player(user.get_deck())
-        self.players[user].first_draw()
 
     def active_player(self) -> Player:
         return self.players[self.active_user]
@@ -63,6 +62,8 @@ class Game:
         return others
 
     def starting_the_game(self) -> NoReturn:
+        for user in self.players:
+            self.players[user].first_draw()
         for k in self.players.keys():
             k.draw_starting_hand(self.players[k].get_hands())
         choose_player: IUser = choice(list(self.players.keys()))
@@ -118,6 +119,9 @@ class Game:
 
     def _declare_attackers(self, indexes: List[int]) -> NoReturn:
         self.tmp_attacker = self.active_player().declare_attackers(indexes)
+        self._clear_tmp_blocker()
+
+    def _clear_tmp_blocker(self):
         self.tmp_blocker = {}
         for attacker in self.tmp_attacker:
             self.tmp_blocker[attacker] = []
