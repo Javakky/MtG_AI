@@ -18,7 +18,7 @@ def main():
 
 if __name__ == '__main__':
     result = []
-    for j in range(100):
+    for j in range(30):
         winner = {"ai_1": 0, "ai_2": 0}
         reason = {"LO": 0, "DAMAGE": 0}
         for i in range(100):
