@@ -7,7 +7,6 @@ from games.cards.card import Card
 from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
-from games.mana.mana import Mana
 from util.util import debug_print, get_keys_tuple_list, get_values_tuple_list, debug_print_cards, \
     debug_print_cards_of_index
 
@@ -95,7 +94,7 @@ class Reduced(AI):
             self.game.combat_damage()
             return
 
-        B: List[List[Tuple[int, Creature]]] = [[] for i in range(P_A.__len__())]
+        B: List[List[Tuple[int, Creature]]] = [[] for _ in range(P_A.__len__())]
 
         for b in P_B:
             rand = random.randint(0, P_A.__len__())
