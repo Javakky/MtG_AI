@@ -18,7 +18,7 @@ from games.cards.land import Land
 from games.game import Game
 from games.i_user import IUser
 from util.montecalro.state import State
-from util.util import get_keys_tuple_list, combinations_all
+from util.util import get_keys_tuple_list, combinations_all, print_cards_of_index
 
 
 class SampleGame(Game, State):
@@ -105,7 +105,7 @@ class SampleGame(Game, State):
                 i,
                 get_keys_tuple_list(require_land(
                     target,
-                    self.get_indexed_fields(self.active_user, True, Land)
+                    self.get_indexed_fields(self.active_user, True, type=Land)
                 ))
             )
 
@@ -204,12 +204,14 @@ class SampleGame(Game, State):
 
         if self.config.binary_spell:
             if self.wait_select_spells.__len__() == 0:
-                return [self.next(Timing.PLAY_SPELL)]
-            play: SampleGame = self.next(Timing.PLAY_LAND, True)
-            not_play: SampleGame = self.next(Timing.PLAY_LAND, True)
+                tmp = self.next(Timing.PLAY_SPELL)
+                tmp.next_params["play_end"] = True
+                return [tmp]
+            play: SampleGame = self.next(Timing.PLAY_LAND, wait_select_spells=True)
+            not_play: SampleGame = self.next(Timing.PLAY_LAND, wait_select_spells=True)
             while play.wait_select_spells.__len__() > 0:
                 spell: Tuple[int, Creature] = play.wait_select_spells.pop(0)
-                not_play.wait_select_spells.pop(0)
+                notp_spell: Tuple[int, Creature] = not_play.wait_select_spells.pop(0)
                 for pair in playable:
                     for target in pair:
                         if spell[0] == target[0]:
@@ -221,9 +223,13 @@ class SampleGame(Game, State):
                     continue
                 play._play_spells([spell[0]])
                 play.next_params["spell"] = [spell]
+                play.next_params["play"] = True
+                not_play.next_params["spell"] = [notp_spell]
                 break
             else:
-                return [self.next(Timing.PLAY_SPELL)]
+                tmp = self.next(Timing.PLAY_SPELL)
+                tmp.next_params["play_end"] = True
+                return [tmp]
             return [play, not_play]
 
         nexts: List[SampleGame] = [self.next(Timing.PLAY_SPELL)]

@@ -1,8 +1,10 @@
 import sys
 from typing import NoReturn
 
+from ai.expert import Expert
 from ai.montecalro.mcts_ai import MCTS_AI
 from ai.montecalro.mtg_config import MtGConfigBuilder
+from ai.random import RandomPlayer
 from ai.reduced import Reduced
 from games.game import Game
 
@@ -10,8 +12,9 @@ from games.game import Game
 def main() -> NoReturn:
     sys.setrecursionlimit(10 ** 9)
     game: Game = Game()
-    user1 = Reduced(game, "ai_1")
+    user1 = Expert(game, "ai_1")
     user2 = MCTS_AI(game, "ai_2", MtGConfigBuilder()
+                    .set_binary_spell(True)
                     .build()
                     )
     game.starting_the_game()
@@ -23,7 +26,7 @@ if __name__ == '__main__':
     for j in range(1):
         winner = {"ai_1": 0, "ai_2": 0}
         reason = {"LO": 0, "DAMAGE": 0}
-        for i in range(1):
+        for i in range(10):
             tpl = main()
             winner[tpl[0]] += 1
             reason[tpl[1]] += 1
