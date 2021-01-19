@@ -36,7 +36,7 @@ class MtGConfigBuilder(ConfigBuilder):
         self.player_ai: Type[A] = Reduced
         self.enemy_ai: Type[A] = Reduced
 
-    def set_discount(self, value: int) -> 'MtGConfigBuilder':
+    def set_discount(self, value: float) -> 'MtGConfigBuilder':
         self.discount = value
         return self
 

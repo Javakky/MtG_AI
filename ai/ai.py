@@ -4,6 +4,7 @@ from typing import List, Tuple, Union, NoReturn
 from client.console_user import ConsoleUser, ABCMeta
 from games.cards.creature import Creature
 from games.cards.land import Land
+from util.Exception import IllegalManaException
 from util.util import debug_print, debug_print_cards, index_with_default, combinations_all
 
 
@@ -15,6 +16,8 @@ def require_land(creature: Creature, lands: List[Tuple[int, Land]]) -> List[Tupl
         if creature_mana > generated_mana:
             land_indexes.append(land)
             generated_mana += land[1].mana.count()
+    if creature_mana > generated_mana:
+        raise IllegalManaException("マナが足りません")
     return land_indexes
 
 

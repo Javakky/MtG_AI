@@ -1,4 +1,4 @@
-from typing import List, Dict, NoReturn, cast, Tuple
+from typing import List, Dict, NoReturn, cast, Tuple, Optional
 
 from ai.ai import AI, require_land
 from ai.montecalro.mtg_config import MtGConfig
@@ -10,7 +10,7 @@ from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
 from util.montecalro.mcts import MCTS
-from util.util import get_keys_tuple_list, print_cards, print_cards_of_index
+from util.util import get_keys_tuple_list
 
 
 class MCTS_AI(AI):
@@ -22,6 +22,8 @@ class MCTS_AI(AI):
         self.selected: List[Tuple[int, Creature]] = []
         self.config: MtGConfig = config
         self.mcts: MCTS = MCTS(config)
+        self.binary_wait: List[Tuple[int, Creature]] = []
+        self.binary_playing: bool = False
 
     def get_deck(self) -> List[Card]:
         return get_sample_deck()
@@ -39,6 +41,7 @@ class MCTS_AI(AI):
         self.selected_spell = False
         self.played_land = False
         self.selected = []
+        self.binary_playing = False
 
     def draw_step(self, card: Card) -> NoReturn:
         pass
@@ -55,23 +58,47 @@ class MCTS_AI(AI):
                 return
 
         if self.config.binary_spell:
+            if not self.binary_playing:
+                self.binary_playing = True
+                self.binary_wait = sorted(
+                    self.game.get_indexed_hands(self, Creature),
+                    key=lambda x: (x[1].mana_cost.count()),
+                    reverse=True
+                )
+
+            remain_mana = self.game.get_remain_mana()
+            self.binary_wait = list(filter(lambda x: x[1].mana_cost.count() <= remain_mana, self.binary_wait))
+
+            if self.binary_wait.__len__() == 0:
+                self.game.pass_priority()
+                return
+
             params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
                 SampleGame(
                     self,
                     Timing.PLAY_LAND,
                     self.config,
-                    sorted(
-                        self.game.get_indexed_hands(self, Creature),
-                        key=lambda x: (x[1].power, x[1].mana_cost.count()),
-                        reverse=True
-                    )
+                    wait_select_spells=self.binary_wait
                 ),
                 self.config
             ).next_params
+            spell: Optional[Tuple[int, Creature]] = None
             if "spell" in params:
-                self._play_spell(cast(List[Tuple[int, Creature]], params["spell"])[0])
-            else:
+                for i in self.binary_wait:
+                    if i[0] == cast(List[Tuple[int, Creature]], params["spell"])[0][0]:
+                        self.binary_wait.remove(i)
+                        if "play" in params and params["play"]:
+                            spell = i
+
+            if "play_end" in params:
                 self.game.pass_priority()
+                return
+
+            if spell is not None:
+                self._play_spell(spell)
+                return
+
+            self.receive_priority()
             return
 
         if not self.selected_spell:
