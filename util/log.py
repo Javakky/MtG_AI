@@ -5,8 +5,8 @@ from typing import NoReturn
 
 
 def write(name, message, dir="") -> NoReturn:
-    os.chdir('../log')
-    dir = os.getcwd() + "/" + dir
+    os.chdir('..\\log')
+    dir = os.getcwd() + "\\" + dir
     if not os.path.isdir(dir):
         os.makedirs(dir)
     path = dir + name + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + ".txt"
