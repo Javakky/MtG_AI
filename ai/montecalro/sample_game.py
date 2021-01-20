@@ -108,6 +108,15 @@ class SampleGame(Game, State):
                     self.get_indexed_fields(self.active_user, True, type=Land)
                 ))
             )
+            if self.config.binary_spell:
+                waits = self.wait_select_spells
+                results = []
+                for i in self.get_indexed_hands(self.active_user, Land):
+                    for w in waits:
+                        if i[1].name == w[1].name:
+                            results.append(i)
+                            break
+                self.wait_select_spells = results
 
     @property
     def legal_actions(self) -> List['SampleGame']:
@@ -221,10 +230,10 @@ class SampleGame(Game, State):
                     break
                 else:
                     continue
-                play._play_spells([spell[0]])
                 play.next_params["spell"] = [spell]
                 play.next_params["play"] = True
                 not_play.next_params["spell"] = [notp_spell]
+                play._play_spells([spell[0]])
                 break
             else:
                 tmp = self.next(Timing.PLAY_SPELL)
