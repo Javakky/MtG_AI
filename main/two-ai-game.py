@@ -12,7 +12,7 @@ from games.game import Game
 def main() -> NoReturn:
     sys.setrecursionlimit(10 ** 9)
     game: Game = Game()
-    user1 = Expert(game, "ai_1")
+    user1 = Reduced(game, "ai_1")
     user2 = MCTS_AI(game, "ai_2", MtGConfigBuilder()
                     .set_binary_spell(True)
                     .build()

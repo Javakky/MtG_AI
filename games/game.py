@@ -275,9 +275,9 @@ class Game:
                 result.append((i, cards[i]))
         return result
 
-    def get_indexed_hands(self, user, type: Type[P]) -> List[Tuple[int, P]]:
-        cards: List[Permanent] = self.get_hands(user)
-        result: List[Tuple[int, P]] = []
+    def get_indexed_hands(self, user, type: Type[C] = Card) -> List[Tuple[int, C]]:
+        cards: List[Card] = self.get_hands(user)
+        result: List[Tuple[int, C]] = []
         for i in range(cards.__len__()):
             if isinstance(cards[i], type):
                 result.append((i, cards[i]))

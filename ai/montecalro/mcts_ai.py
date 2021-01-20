@@ -22,7 +22,7 @@ class MCTS_AI(AI):
         self.selected: List[Tuple[int, Creature]] = []
         self.config: MtGConfig = config
         self.mcts: MCTS = MCTS(config)
-        self.binary_wait: List[Tuple[int, Creature]] = []
+        self.binary_complete: List[Creature] = []
         self.binary_playing: bool = False
 
     def get_deck(self) -> List[Card]:
@@ -60,16 +60,22 @@ class MCTS_AI(AI):
         if self.config.binary_spell:
             if not self.binary_playing:
                 self.binary_playing = True
-                self.binary_wait = sorted(
-                    self.game.get_indexed_hands(self, Creature),
-                    key=lambda x: (x[1].mana_cost.count()),
-                    reverse=True
-                )
+                self.binary_complete = []
 
             remain_mana = self.game.get_remain_mana()
-            self.binary_wait = list(filter(lambda x: x[1].mana_cost.count() <= remain_mana, self.binary_wait))
 
-            if self.binary_wait.__len__() == 0:
+            target = sorted(
+                self.game.get_indexed_hands(self, Creature),
+                key=lambda x: (x[1].mana_cost.count()),
+                reverse=True
+            )
+            target = list(filter(lambda x: x[1].mana_cost.count() <= remain_mana, target))
+            for comp in self.binary_complete:
+                for t in target:
+                    if comp == t[1]:
+                        target.remove(t)
+
+            if target.__len__() == 0:
                 self.game.pass_priority()
                 return
 
@@ -78,17 +84,20 @@ class MCTS_AI(AI):
                     self,
                     Timing.PLAY_LAND,
                     self.config,
-                    wait_select_spells=self.binary_wait
+                    wait_select_spells=target
                 ),
                 self.config
             ).next_params
+
             spell: Optional[Tuple[int, Creature]] = None
             if "spell" in params:
-                for i in self.binary_wait:
+                for i in target:
                     if i[0] == cast(List[Tuple[int, Creature]], params["spell"])[0][0]:
-                        self.binary_wait.remove(i)
                         if "play" in params and params["play"]:
                             spell = i
+                        else:
+                            self.binary_complete.append(i[1])
+                        break
 
             if "play_end" in params:
                 self.game.pass_priority()
