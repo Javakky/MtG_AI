@@ -18,7 +18,7 @@ from games.cards.land import Land
 from games.game import Game
 from games.i_user import IUser
 from util.montecalro.state import State
-from util.util import get_keys_tuple_list, combinations_all, print_cards_of_index
+from util.util import get_keys_tuple_list, combinations_all
 
 
 class SampleGame(Game, State):
@@ -200,9 +200,9 @@ class SampleGame(Game, State):
             return [next]
 
         lands: List[Tuple[int, Land]] = self.get_indexed_hands(self.active_user, Land)
-        nexts: List[SampleGame] = [self.next(Timing.PLAY_LAND, was_swich=True)]
+        nexts: List[SampleGame] = [self.next(Timing.PLAY_LAND, was_swich=(self.now == Timing.SELECT_BLOCKER))]
         if lands.__len__() != 0:
-            next: SampleGame = self.next(Timing.PLAY_LAND, was_swich=True)
+            next: SampleGame = self.next(Timing.PLAY_LAND, was_swich=(self.now == Timing.SELECT_BLOCKER))
             next._play_land(lands[0][0])
             next.next_params["land"] = lands[0][0]
             nexts.append(next)
