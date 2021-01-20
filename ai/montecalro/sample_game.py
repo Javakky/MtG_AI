@@ -93,8 +93,8 @@ class SampleGame(Game, State):
             now,
             config,
             self.wait_select_spells if wait_select_spells else None,
-            self.player_order,
-            self.enemy_order,
+            self.player_order if was_swich else self.enemy_order,
+            self.enemy_order if was_swich else self.player_order,
             was_swich
         )
 

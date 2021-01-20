@@ -138,12 +138,12 @@ if __name__ == '__main__':
     for j in range(100):
         winner = {"ai_1": 0, "ai_2": 0}
         reason = {"LO": 0, "DAMAGE": 0}
-        for i in range(100):
+        for i in range(1):
             tpl = main(opponent, player_config, opponent_config)
             winner[tpl[0]] += 1
             reason[tpl[1]] += 1
             if i % 10 == 0:
-                print((j+1)*100 + (i+1))
+                print((j)*100 + (i))
         message: str = str(winner["ai_1"]) + "," \
                        + str(winner["ai_2"]) + "\n" \
                        + str(reason["LO"]) + "," \
