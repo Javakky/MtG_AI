@@ -33,4 +33,3 @@ class State(metaclass=ABCMeta):
     @abstractmethod
     def switched(self) -> bool:
         raise NotImplementedError
-

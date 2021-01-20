@@ -1,6 +1,8 @@
 import json
+import random
 import sys
-from typing import Tuple, Optional, Type, TypeVar
+import time
+from typing import Tuple, Type, TypeVar
 
 from ai.ai import AI
 from ai.expert import Expert
@@ -8,7 +10,6 @@ from ai.montecalro.mcts_ai import MCTS_AI
 from ai.montecalro.mtg_config import MtGConfigBuilder, MtGConfig
 from ai.random import RandomPlayer
 from ai.reduced import Reduced
-from client.console_user import ConsoleUser
 from games.game import Game
 from util.log import write
 
@@ -67,7 +68,7 @@ def getConfig() -> Tuple[Type[T], MtGConfig, MtGConfig]:
         elif sys.argv[index] == "--binary-spell":
             player_conf.set_binary_spell(True)
         elif sys.argv[index] == "--interesting-order":
-            if index+1 < len(sys.argv) and not sys.argv[index + 1].startswith("--"):
+            if index + 1 < len(sys.argv) and not sys.argv[index + 1].startswith("--"):
                 index += 1
                 player_conf.set_interesting_order(True, int(sys.argv[index]))
             player_conf.set_interesting_order(True)
@@ -105,7 +106,7 @@ def getConfig() -> Tuple[Type[T], MtGConfig, MtGConfig]:
         elif sys.argv[index] == "--opponent-binary-spell":
             opponent_conf.set_binary_spell(True)
         elif sys.argv[index] == "--opponent-interesting-order":
-            if not sys.argv[index + 1].startswith("--"):
+            if index + 1 < len(sys.argv) and not sys.argv[index + 1].startswith("--"):
                 index += 1
                 opponent_conf.set_interesting_order(True, int(sys.argv[index]))
             opponent_conf.set_interesting_order(True)
@@ -127,6 +128,8 @@ def getConfig() -> Tuple[Type[T], MtGConfig, MtGConfig]:
         elif sys.argv[index] == "--opponent-simulations":
             index += 1
             opponent_conf.set_simulations(int(sys.argv[index]))
+        else:
+            raise Exception("存在しないオプションです")
         index += 1
 
     return opponent, player_conf.build(), opponent_conf.build()
@@ -134,20 +137,25 @@ def getConfig() -> Tuple[Type[T], MtGConfig, MtGConfig]:
 
 if __name__ == '__main__':
     (opponent, player_config, opponent_config) = getConfig()
+    msg = opponent.__name__ + "\n" + json.dumps(vars(player_config), default=lambda x: x.__name__) + "\n" + json.dumps(vars(opponent_config), default=lambda x: x.__name__)
+    write("config_", msg, "")
     result = []
     for j in range(100):
+        seed = time.time()
+        random.seed(seed)
         winner = {"ai_1": 0, "ai_2": 0}
         reason = {"LO": 0, "DAMAGE": 0}
-        for i in range(1):
+        for i in range(100):
             tpl = main(opponent, player_config, opponent_config)
             winner[tpl[0]] += 1
             reason[tpl[1]] += 1
             if i % 10 == 0:
-                print((j)*100 + (i))
+                print((j) * 100 + (i))
         message: str = str(winner["ai_1"]) + "," \
                        + str(winner["ai_2"]) + "\n" \
                        + str(reason["LO"]) + "," \
-                       + str(reason["DAMAGE"])
+                       + str(reason["DAMAGE"]) + "\n" \
+                       + str(seed) + "\n"
         result.append(winner["ai_1"] / (winner["ai_1"] + winner["ai_2"]) * 100)
         write("", message, "")
         print(str(j))
