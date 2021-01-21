@@ -1,7 +1,8 @@
+from abc import abstractmethod, ABCMeta
 from itertools import combinations
-from typing import List, Tuple, Union, NoReturn
+from typing import List, Tuple, Union, NoReturn, Optional
 
-from client.console_user import ConsoleUser, ABCMeta
+from client.console_user import ConsoleUser
 from games.cards.creature import Creature
 from games.cards.land import Land
 from util.Exception import IllegalManaException
@@ -60,6 +61,13 @@ class AI(ConsoleUser, metaclass=ABCMeta):
                                           for x in blockers]
         self.game.assign_damage(attacker, blockers, find_damage_destroyable_max_cost_assign(point, _b))
 
+    @abstractmethod
+    def _declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None, A: Optional[List[Tuple[int, Creature]]] = None) -> List[int]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def _declare_blockers_step(self, P_A_index: List[int]) -> List[List[Tuple[int, Creature]]]:
+        raise NotImplementedError
 
 def all_playable_pairs(
         creatures: List[Tuple[int, Creature]], remain_mana: int

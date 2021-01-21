@@ -3,6 +3,7 @@ from typing import NoReturn
 
 from ai.montecalro.mcts_ai import MCTS_AI
 from ai.montecalro.mtg_config import MtGConfigBuilder
+from ai.random import RandomPlayer
 from ai.reduced import Reduced
 from games.game import Game
 
@@ -13,6 +14,10 @@ def main() -> NoReturn:
     user1 = Reduced(game, "ai_1")
     user2 = MCTS_AI(game, "ai_2", MtGConfigBuilder()
                     .set_binary_spell(True)
+                    .set_dominate_pruning(True)
+                    .set_interesting_order(True)
+                    .set_binary_attacker(True)
+                    .set_simulations(500)
                     .build()
                     )
     game.starting_the_game()

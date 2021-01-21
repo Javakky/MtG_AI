@@ -8,7 +8,7 @@ from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
 from games.mana.mana import Mana
-from util.util import debug_print, get_keys_tuple_list, get_values_tuple_list, debug_print_cards
+from util.util import debug_print, get_keys_tuple_list, get_values_tuple_list, debug_print_cards, print_cards_of_index
 
 
 def exists_one_sidedly_destroied_pair(p_A: Creature, p_B: List[Creature]) -> bool:
@@ -219,15 +219,15 @@ class Expert(AI):
         else:
             self.game.pass_priority()
 
-    def _declare_attackers_step(self) -> List[int]:
-        P_A: List[Tuple[int, Creature]] = sorted(
-            self.game.get_indexed_fields(self, True, Creature),
-            key=lambda x: (x[1].power, x[1].mana_cost.count())
-        )
+    def _declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None, A: Optional[List[Tuple[int, Creature]]] = None) -> List[int]:
+        if P_A is None:
+            P_A: List[Tuple[int, Creature]] = sorted(
+                self.game.get_indexed_fields(self, True, Creature),
+                key=lambda x: (x[1].power, x[1].mana_cost.count())
+            )
         if P_A.__len__() == 0:
             return []
 
-        debug_print_cards(self.game.get_fields(self.game.non_self_users(self)[0], True, Creature))
         P_B: List[Creature] = sorted(
             self.game.get_fields(self.game.non_self_users(self)[0], True, Creature),
             key=lambda x: (x.power, x.mana_cost.count())
@@ -255,7 +255,8 @@ class Expert(AI):
         if a_max < 0:
             return get_keys_tuple_list(P_A)
 
-        A: List[int] = []
+        if A is None:
+            A: List[int] = []
         i: int = P_A.__len__() - 1
         while A.__len__() < a_max and i > 0:
             if not exists_one_sidedly_destroied_pair(P_A[i][1], P_B) \
@@ -266,8 +267,8 @@ class Expert(AI):
             i -= 1
         return A
 
-    def declare_attackers_step(self) -> NoReturn:
-        A: List[int] = self._declare_attackers_step()
+    def declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None, A: Optional[List[Tuple[int, Creature]]] = None) -> NoReturn:
+        A: List[int] = self._declare_attackers_step(P_A, A)
         self.game.declare_attackers(A)
         return
 

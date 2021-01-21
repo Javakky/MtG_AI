@@ -1,5 +1,5 @@
 import random
-from typing import List, Dict, Tuple, NoReturn
+from typing import List, Dict, Tuple, NoReturn, Optional
 
 from ai.ai import require_land, AI, all_playable_pairs
 from deck.deck_list import get_sample_deck
@@ -77,34 +77,36 @@ class RandomPlayer(AI):
                 self.selected = sorted(self.selected, key=lambda x: x[0], reverse=True)
             self.receive_priority()
 
-    def declare_attackers_step(self) -> NoReturn:
-        P_A: List[Tuple[int, Creature]] = sorted(
-            self.game.get_indexed_fields(self, True, Creature),
-            key=lambda x: (x[1].power, x[1].mana_cost.count())
-        )
+    def declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None, A: Optional[List[Tuple[int, Creature]]] = None) -> NoReturn:
+        self.game.declare_attackers(self._declare_attackers_step(P_A, A))
+
+    def _declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None,
+                                A: Optional[List[Tuple[int, Creature]]] = None) -> List[int]:
+        if P_A is None:
+            P_A: List[Tuple[int, Creature]] = sorted(
+                self.game.get_indexed_fields(self, True, Creature),
+                key=lambda x: (x[1].power, x[1].mana_cost.count())
+            )
         if P_A.__len__() == 0:
-            self.game.declare_attackers([])
-            return
+            return []
 
         debug_print_cards(self.game.get_fields(self.game.non_self_users(self)[0], True, Creature))
         attackable: List[List[Tuple[int, Creature]]] = combinations_all(P_A)
-        self.game.declare_attackers(get_keys_tuple_list(attackable[random.randint(0, attackable.__len__() - 1)]))
+        tmp: List[int] = get_keys_tuple_list(attackable[random.randint(0, attackable.__len__() - 1)])
+        if A is not None:
+            tmp.extend(get_keys_tuple_list(A))
+        return tmp
 
-    def declare_blockers_step(self, P_A_index: List[int]) -> NoReturn:
+    def _declare_blockers_step(self, P_A_index: List[int]) -> List[List[Tuple[int, Creature]]]:
         P_A: List[Tuple[int, Tuple[int, Creature]]] = []
         for i in range(P_A_index.__len__()):
             P_A.append(
                 (i, (P_A_index[i], self.game.get_field(self.game.non_self_users(self)[0], P_A_index[i], Creature)))
             )
         P_A = sorted(P_A, key=lambda x: (x[1][1].power, x[1][1].mana_cost.count()))
-        debug_print("アタッカー:")
-        debug_print_cards_of_index(get_values_tuple_list(P_A))
         P_B: List[Tuple[int, Creature]] = self.game.get_indexed_fields(self, True, Creature)
-        # debug_print("潜在的ブロッカー:")
-        # debug_print_cards_of_index(P_B)
         if P_B.__len__() == 0:
-            self.game.combat_damage()
-            return
+            return []
 
         B: List[List[Tuple[int, Creature]]] = [[] for _ in range(P_A.__len__())]
 
@@ -114,9 +116,10 @@ class RandomPlayer(AI):
                 continue
             B[P_A[rand][0]].append(b)
 
-        debug_print("選択結果：")
-        for i in range(P_A.__len__()):
-            debug_print(str(i) + ":")
-            debug_print_cards_of_index(B[i])
+        return B
+
+    def declare_blockers_step(self, P_A_index: List[int]) -> NoReturn:
+        B: List[List[Tuple[int, Creature]]] = self._declare_blockers_step(P_A_index)
+        for i in range(B.__len__()):
             self.game.declare_blokers(i, get_keys_tuple_list(B[i]))
         self.game.combat_damage()
