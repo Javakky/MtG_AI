@@ -7,8 +7,7 @@ from games.cards.card import Card
 from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
-from util.util import debug_print, get_keys_tuple_list, get_values_tuple_list, debug_print_cards, \
-    debug_print_cards_of_index, print_cards_of_index
+from util.util import debug_print, get_keys_tuple_list, get_values_tuple_list, debug_print_cards
 
 
 class Reduced(AI):

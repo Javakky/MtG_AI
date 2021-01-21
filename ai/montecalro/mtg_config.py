@@ -1,7 +1,6 @@
 from typing import Type, TypeVar
 
 from ai.ai import AI
-from ai.expert import Expert
 from ai.montecalro.mcts_ai import MCTS_AI
 from ai.reduced import Reduced
 from util.montecalro.config import ConfigBuilder, Config
