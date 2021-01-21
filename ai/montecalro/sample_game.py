@@ -5,7 +5,7 @@ from itertools import combinations_with_replacement
 from math import floor
 from typing import List, Tuple, Optional, Iterable, Dict, cast
 
-from ai.ai import require_land, all_playable_pairs, maximam_playable_pairs
+from ai.ai import require_land, all_playable_pairs, maximam_playable_pairs, AI
 from ai.expert import Expert
 from ai.montecalro import timing
 from ai.montecalro.mtg_config import MtGConfig, MtGConfigBuilder
@@ -18,7 +18,7 @@ from games.cards.land import Land
 from games.game import Game
 from games.i_user import IUser
 from util.montecalro.state import State
-from util.util import get_keys_tuple_list, combinations_all
+from util.util import get_keys_tuple_list, combinations_all, print_cards_of_index
 
 
 class SampleGame(Game, State):
@@ -27,10 +27,16 @@ class SampleGame(Game, State):
                  wait_select_spells: Optional[List[Tuple[int, Creature]]] = None,
                  player_fixed_ordering: Optional[List[Card]] = None,
                  enemy_fixed_ordering: Optional[List[Card]] = None,
-                 was_switch: bool = False):
+                 was_switch: bool = False,
+                 wait_select_attackers: List[Tuple[int, Creature]] = None,
+                 selected_attacker: List[Tuple[int, Creature]] = None):
         super().__init__()
         if wait_select_spells is None:
             wait_select_spells = []
+        if wait_select_attackers is None:
+            wait_select_attackers = []
+        if selected_attacker is None:
+            selected_attacker = []
         game: Game = player.game
         self.reward: float = 0
         self.ended: bool = False
@@ -42,13 +48,15 @@ class SampleGame(Game, State):
         self.legal_action: Optional[List[SampleGame]] = None
         self.next_params: Dict[str, object] = {}
         self.wait_select_spells: List[Tuple[int, Creature]] = copy.deepcopy(wait_select_spells)
+        self.wait_select_attackers: List[Tuple[int, Creature]] = copy.deepcopy(wait_select_attackers)
+        self.selected_attacker: List[Tuple[int, Creature]] = copy.deepcopy(selected_attacker)
         self.was_switch: bool = was_switch
         if game.winner is not None:
             self.reason = game.reason
             self.winner = game.winner
             self.ending_the_game(game.winner)
-        self.player: IUser = self.config.player_ai(self, "player")
-        self.enemy: IUser = self.config.enemy_ai(self, "enemy")
+        self.player: AI = self.config.player_ai(self, "player")
+        self.enemy: AI = self.config.enemy_ai(self, "enemy")
         self.active_user = self.player if game.active_user == player else self.enemy
         self.players[self.player] = SamplePlayer(player, True, set_order=self.config.interesting_order)
         self.players[self.enemy] = SamplePlayer(game.non_self_users(player)[0], False,
@@ -83,7 +91,8 @@ class SampleGame(Game, State):
         return self.ended
 
     def next(self, now: Timing = None, wait_select_spells: bool = False,
-             config: Optional[MtGConfig] = None, was_swich: bool = False) -> 'SampleGame':
+             config: Optional[MtGConfig] = None, was_swich: bool = False,
+             wait_select_attackers: bool = False, selected_attacker: bool = False) -> 'SampleGame':
         if now is None:
             now = self.now
         if config is None:
@@ -95,7 +104,9 @@ class SampleGame(Game, State):
             self.wait_select_spells if wait_select_spells else None,
             self.player_order if was_swich else self.enemy_order,
             self.enemy_order if was_swich else self.player_order,
-            was_swich
+            was_swich,
+            self.wait_select_attackers if wait_select_attackers else None,
+            self.selected_attacker if selected_attacker else None
         )
 
     def _play_spells(self, indexes: List[int]):
@@ -146,49 +157,10 @@ class SampleGame(Game, State):
             elif self.now == Timing.PLAY_LAND:
                 self.legal_action = self.legal_play_spell()
 
-            elif self.now == Timing.PLAY_SPELL:
-                creatures: List[Tuple[int, Creature]] = self.get_indexed_fields(
-                    self.non_active_users()[0],
-                    type=Creature
-                )
-                p_a: List[List[Tuple[int, Creature]]] = combinations_all(creatures)
-                nexts: List[SampleGame] = []
-                for attackers in p_a:
-                    next: SampleGame = self.next(Timing.SELECT_ATTACKER, was_swich=True)
-                    next._start_phase()
-                    next._declare_attackers(get_keys_tuple_list(attackers))
-                    next.next_params["attacker"] = get_keys_tuple_list(attackers)
-                    nexts.append(next)
-                self.legal_action = nexts
-
-            elif self.now == Timing.AFTER_START:
-                creatures: List[Tuple[int, Creature]] = self.get_indexed_fields(self.active_user, type=Creature)
-                p_a: List[List[Tuple[int, Creature]]] = combinations_all(creatures)
-                nexts: List[SampleGame] = []
-                for attackers in p_a:
-                    next: SampleGame = self.next(Timing.SELECT_ATTACKER)
-                    next._declare_attackers(get_keys_tuple_list(attackers))
-                    next.next_params["attacker"] = get_keys_tuple_list(attackers)
-                    nexts.append(next)
-                self.legal_action = nexts
+            elif self.now == Timing.AFTER_START or self.now == Timing.PLAY_SPELL:
+                self.legal_action = self.legal_select_attacker(self.now == Timing.AFTER_START)
 
         return self.legal_action
-
-    def switched(self) -> bool:
-        return self.was_switch
-
-    def playout(self) -> float:
-        if self.now == Timing.PLAY_LAND:
-            self.active_user.receive_priority()
-        elif self.now == Timing.PLAY_SPELL:
-            self.pass_priority()
-        elif self.now == Timing.SELECT_ATTACKER or self.now == Timing.AFTER_START:
-            self.non_active_users()[0].declare_blockers_step(self.tmp_attacker)
-        elif self.now == Timing.SELECT_BLOCKER:
-            self.combat_damage()
-        if self.ended:
-            return self.reward
-        raise NotImplementedError
 
     def legal_play_land(self) -> List['SampleGame']:
         if self.config.play_land:
@@ -250,6 +222,75 @@ class SampleGame(Game, State):
             nexts.append(next)
 
         return nexts
+
+    def legal_select_attacker(self, myturn: bool) -> List['SampleGame']:
+        if self.config.binary_attacker:
+            play: SampleGame = self.next(
+                Timing.AFTER_START if self.wait_select_attackers.__len__() > 1 else Timing.SELECT_ATTACKER,
+                wait_select_attackers=True,
+                selected_attacker=True,
+                was_swich=not myturn
+            )
+            not_play: SampleGame = self.next(
+                Timing.AFTER_START if self.wait_select_attackers.__len__() > 1 else Timing.SELECT_ATTACKER,
+                wait_select_attackers=True,
+                selected_attacker=True,
+                was_swich=not myturn
+            )
+            creature: Tuple[int, Creature] = play.wait_select_attackers.pop(0)
+            nota_creature: Tuple[int, Creature] = not_play.wait_select_attackers.pop(0)
+            play.next_params["attacker"] = [creature]
+            play.next_params["attack"] = True
+            not_play.next_params["attacker"] = [nota_creature]
+            play.selected_attacker.append(creature)
+
+            if self.wait_select_attackers.__len__() == 1:
+                play._declare_attackers(get_keys_tuple_list(play.selected_attacker))
+
+            return [play, not_play]
+
+        if myturn:
+            creatures: List[Tuple[int, Creature]] = self.get_indexed_fields(self.active_user, type=Creature)
+        else:
+            creatures: List[Tuple[int, Creature]] = self.get_indexed_fields(
+                self.non_active_users()[0],
+                type=Creature
+            )
+        p_a: List[List[Tuple[int, Creature]]] = combinations_all(creatures)
+        nexts: List[SampleGame] = []
+        for attackers in p_a:
+            next: SampleGame = self.next(Timing.SELECT_ATTACKER, was_swich=not myturn)
+            if not myturn:
+                next._start_phase()
+            next._declare_attackers(get_keys_tuple_list(attackers))
+            next.next_params["attacker"] = get_keys_tuple_list(attackers)
+            nexts.append(next)
+        return nexts
+
+    def switched(self) -> bool:
+        return self.was_switch
+
+    def playout(self) -> float:
+        if self.now == Timing.PLAY_LAND:
+            self.active_user.receive_priority()
+        elif self.now == Timing.PLAY_SPELL:
+            self.pass_priority()
+        elif self.now == Timing.AFTER_START:
+            if self.config.binary_attacker:
+                if self.wait_select_attackers.__len__() > 0:
+                    self.active_user.declare_attackers_step(self.wait_select_attackers, self.selected_attacker)
+                else:
+                    self._declare_attackers(get_keys_tuple_list(self.selected_attacker))
+                    self.non_active_users()[0].declare_blockers_step(self.tmp_attacker)
+            else:
+                self.active_user.declare_attackers_step()
+        elif self.now == Timing.SELECT_ATTACKER:
+            self.non_active_users()[0].declare_blockers_step(self.tmp_attacker)
+        elif self.now == Timing.SELECT_BLOCKER:
+            self.combat_damage()
+        if self.ended:
+            return self.reward
+        raise NotImplementedError
 
     def get_playable_pairs(self):
 

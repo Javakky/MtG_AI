@@ -1,6 +1,8 @@
 from typing import Type, TypeVar
 
 from ai.ai import AI
+from ai.expert import Expert
+from ai.montecalro.mcts_ai import MCTS_AI
 from ai.reduced import Reduced
 from util.montecalro.config import ConfigBuilder, Config
 
@@ -18,13 +20,18 @@ class MtGConfig(Config):
         self.binary_spell: bool = builder.binary_spell
         self.interesting_order: bool = builder.interesting_order
         self.find_per_once: int = builder.find_per_once
+        self.binary_attacker: bool = builder.binary_attacker
         self.player_ai: Type[A] = builder.player_ai
         self.enemy_ai: Type[A] = builder.enemy_ai
+        self.attacked_policy: Type[A] = builder.attacked_policy
+        self.blocked_policy: Type[A] = builder.blocked_policy
 
 
 class MtGConfigBuilder(ConfigBuilder):
     def __init__(self):
         super().__init__()
+        self.blocked_policy: Type[A] = MCTS_AI
+        self.attacked_policy: Type[A] = MCTS_AI
         self.discount: float = 0.99
         self.win_reward: int = 1
         self.lose_reward: int = 0
@@ -35,6 +42,7 @@ class MtGConfigBuilder(ConfigBuilder):
         self.find_per_once: int = 5
         self.player_ai: Type[A] = Reduced
         self.enemy_ai: Type[A] = Reduced
+        self.binary_attacker: bool = False
 
     def set_discount(self, value: float) -> 'MtGConfigBuilder':
         self.discount = value
@@ -60,6 +68,11 @@ class MtGConfigBuilder(ConfigBuilder):
         self.binary_spell = value
         return self
 
+    def set_binary_attacker(self, value: bool) -> 'MtGConfigBuilder':
+        self.binary_attacker = value
+        self.attacked_policy = MCTS_AI
+        return self
+
     def set_interesting_order(self, use: bool, find_count: int = 5) -> 'MtGConfigBuilder':
         self.interesting_order = use
         if use:
@@ -72,6 +85,14 @@ class MtGConfigBuilder(ConfigBuilder):
 
     def set_enemy_ai(self, value: Type[A]):
         self.enemy_ai = value
+        return self
+
+    def set_attacked_policy(self, value: Type[A]):
+        self.attacked_policy = value
+        return self
+
+    def set_blocked_policy(self, value: Type[A]):
+        self.blocked_policy = value
         return self
 
     def build(self) -> 'MtGConfig':

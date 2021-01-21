@@ -1,7 +1,8 @@
 from abc import *
-from typing import List, Dict, TYPE_CHECKING, NoReturn
+from typing import List, Dict, TYPE_CHECKING, NoReturn, Tuple, Optional
 
 from games.cards.card import Card
+from games.cards.creature import Creature
 
 if TYPE_CHECKING:
     from games.game import Game
@@ -43,7 +44,7 @@ class IUser(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def declare_attackers_step(self) -> NoReturn:
+    def declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None, A: Optional[List[Tuple[int, Creature]]] = None) -> NoReturn:
         raise NotImplementedError
 
     @abstractmethod

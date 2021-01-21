@@ -25,13 +25,13 @@ if __name__ == '__main__':
             tpl = main()
             winner[tpl[0]] += 1
             reason[tpl[1]] += 1
+            print(str(i))
         message: str = "ai_1：" + str(winner["ai_1"]) + "\n" + "ai_2：" \
                        + str(winner["ai_2"]) + "\n" \
                        + "LO：" + str(reason["LO"]) + "\n" \
                        + "DAMAGE：" + str(reason["DAMAGE"])
         result.append(winner["ai_1"] / (winner["ai_1"] + winner["ai_2"]) * 100)
         write("", message, "exp_red_game/")
-        print(str(j))
     message: str = ""
     for i in result:
         message += str(i) + "%" + "\n"

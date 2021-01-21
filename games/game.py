@@ -115,7 +115,7 @@ class Game:
             return card
 
     def finish_main_phase(self) -> NoReturn:
-        self.active_user.declare_attackers_step()
+        self.active_user.declare_attackers_step(None, None)
 
     def _declare_attackers(self, indexes: List[int]) -> NoReturn:
         self.tmp_attacker = self.active_player().declare_attackers(indexes)

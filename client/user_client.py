@@ -1,4 +1,4 @@
-from typing import List, Dict, NoReturn
+from typing import List, Dict, NoReturn, Optional, Tuple
 
 from client.console_user import ConsoleUser
 from deck.deck_list import get_sample_deck
@@ -110,7 +110,7 @@ class UserClient(ConsoleUser):
         elif choosen == 5:
             self.game.pass_priority()
 
-    def declare_attackers_step(self) -> NoReturn:
+    def declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None, A: Optional[List[Tuple[int, Creature]]] = None) -> NoReturn:
         if self.game.get_fields(self, True, Creature).__len__() < 1:
             self.game.declare_attackers([])
             return
