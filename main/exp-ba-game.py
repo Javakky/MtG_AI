@@ -11,7 +11,7 @@ def main():
     sys.setrecursionlimit(10 ** 9)
     game: Game = Game()
     user1 = Expert(game, "ai_1")
-    user2 = MCTS_AI(game, "ai_2", MtGConfigBuilder().build())
+    user2 = MCTS_AI(game, "ai_2", MtGConfigBuilder().set_attacked_policy(Expert).set_blocked_policy(Expert).build())
     game.starting_the_game()
     return game.winner.name, game.reason
 

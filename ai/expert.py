@@ -8,7 +8,7 @@ from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
 from games.mana.mana import Mana
-from util.util import debug_print, get_keys_tuple_list, get_values_tuple_list, debug_print_cards, print_cards_of_index
+from util.util import debug_print, get_keys_tuple_list, get_values_tuple_list, debug_print_cards
 
 
 def exists_one_sidedly_destroied_pair(p_A: Creature, p_B: List[Creature]) -> bool:

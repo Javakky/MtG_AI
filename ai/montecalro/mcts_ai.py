@@ -1,7 +1,9 @@
-from typing import List, Dict, NoReturn, cast, Tuple, Optional
+from typing import List, Dict, NoReturn, cast, Tuple, Optional, TYPE_CHECKING
 
 from ai.ai import AI, require_land
-from ai.montecalro.mtg_config import MtGConfig, MtGConfigBuilder
+
+if TYPE_CHECKING:
+    from ai.montecalro.mtg_config import MtGConfig, MtGConfigBuilder
 from ai.montecalro.sample_game import SampleGame
 from ai.montecalro.timing import Timing
 from deck.deck_list import get_sample_deck
@@ -15,12 +17,12 @@ from util.util import get_keys_tuple_list
 
 class MCTS_AI(AI):
 
-    def __init__(self, game: Game, name: str, config: MtGConfig):
+    def __init__(self, game: Game, name: str, config: 'MtGConfig'):
         super().__init__(game, name)
         self.played_land: bool = False
         self.selected_spell: bool = False
         self.selected: List[Tuple[int, Creature]] = []
-        self.config: MtGConfig = config
+        self.config: 'MtGConfig' = config
         self.mcts: MCTS = MCTS(config)
         self.binary_complete: List[Creature] = []
         self.binary_playing: bool = False
@@ -134,8 +136,14 @@ class MCTS_AI(AI):
         land_indexes: List[Tuple[int, Land]] = require_land(creature[1], lands)
         self.game.cast_pay_cost(creature[0], get_keys_tuple_list(land_indexes))
 
-    def declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None, A: Optional[List[Tuple[int, Creature]]] = None) -> NoReturn:
+    def declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None,
+                               A: Optional[List[Tuple[int, Creature]]] = None) -> NoReturn:
+        self.game.declare_attackers(self._declare_attackers_step(P_A, A))
+
+    def _declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None,
+                                A: Optional[List[Tuple[int, Creature]]] = None) -> List[int]:
         if self.config.attacked_policy != MCTS_AI:
+            from ai.montecalro.mtg_config import MtGConfig, MtGConfigBuilder
             game: SampleGame = SampleGame(self, Timing.SELECT_ATTACKER,
                                           config=MtGConfigBuilder()
                                           .set_player_ai(self.config.attacked_policy)
@@ -144,8 +152,7 @@ class MCTS_AI(AI):
                                           .build()
                                           )
             attacker = cast(AI, game.active_user)._declare_attackers_step()
-            self.game.declare_attackers(attacker)
-            return
+            return attacker
 
         if self.config.binary_attacker:
             if not self.binary_selecting_attacker:
@@ -177,44 +184,46 @@ class MCTS_AI(AI):
                                 selected.append(i)
                             target.remove(i)
                             break
-            self.game.declare_attackers(get_keys_tuple_list(selected))
-            return
+            return get_keys_tuple_list(selected)
 
         params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
             SampleGame(self, Timing.AFTER_START, self.config),
             self.config
         ).next_params
         if "attacker" in params:
-            self.game.declare_attackers(cast(List[int], params["attacker"]))
+            return cast(List[int], params["attacker"])
         else:
-            self.game.declare_attackers([])
+            return []
 
-    def declare_blockers_step(self, attackers: List[int]) -> NoReturn:
+    def _declare_blockers_step(self, P_A_index: List[int]) -> List[List[Tuple[int, Creature]]]:
         if self.config.blocked_policy != MCTS_AI:
+            from ai.montecalro.mtg_config import MtGConfig, MtGConfigBuilder
             game: SampleGame = SampleGame(self, Timing.SELECT_ATTACKER,
                                           config=MtGConfigBuilder()
-                                            .set_player_ai(self.config.blocked_policy)
-                                            .set_enemy_ai(self.config.blocked_policy)
-                                            .set_interesting_order(True)
-                                            .build()
+                                          .set_player_ai(self.config.blocked_policy)
+                                          .set_enemy_ai(self.config.blocked_policy)
+                                          .set_interesting_order(True)
+                                          .build()
                                           )
-            blockers: List[List[Tuple[int, Creature]]] = cast(AI, game.non_active_users()[0])._declare_blockers_step(game.tmp_attacker)
-            for i in range(blockers.__len__()):
-                self.game.declare_blokers(i, get_keys_tuple_list(blockers[i]))
-            self.game.combat_damage()
-            return 
-        
+            blockers: List[List[Tuple[int, Creature]]] = cast(AI, game.non_active_users()[0])._declare_blockers_step(
+                game.tmp_attacker)
+            return blockers
+
         if self.game.tmp_attacker.__len__() == 0:
-            self.game.combat_damage()
-            return
+            return []
         params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
             SampleGame(self, Timing.SELECT_ATTACKER, self.config),
             self.config
         ).next_params
         if "blocker" in params:
-            blockers: List[List[int]] = cast(List[List[int]], params["blocker"])
-            for i in range(blockers.__len__()):
-                self.game.declare_blokers(i, blockers[i])
+            blockers: List[List[Tuple[int, Creature]]] = cast(List[List[Tuple[int, Creature]]], params["blocker"])
+            return blockers
+        return []
+
+    def declare_blockers_step(self, attackers: List[int]) -> NoReturn:
+        blockers: List[List[Tuple[int, Creature]]] = self._declare_blockers_step(attackers)
+        for i in range(blockers.__len__()):
+            self.game.declare_blokers(i, get_keys_tuple_list(blockers[i]))
         self.game.combat_damage()
 
     def combat_damage(self, result: Dict) -> NoReturn:
