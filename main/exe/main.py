@@ -128,6 +128,10 @@ def getConfig() -> Tuple[Type[T], MtGConfig, MtGConfig]:
         elif sys.argv[index] == "--opponent-simulations":
             index += 1
             opponent_conf.set_simulations(int(sys.argv[index]))
+        elif sys.argv[index] == "--binary-attacker":
+            player_conf.set_binary_attacker(True)
+        elif sys.argv[index] == "--opponent-binary-attacker":
+            opponent_conf.set_binary_attacker(True)
         else:
             raise Exception("存在しないオプションです")
         index += 1

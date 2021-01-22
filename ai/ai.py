@@ -66,7 +66,11 @@ class AI(ConsoleUser, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def _declare_blockers_step(self, P_A_index: List[int]) -> List[List[Tuple[int, Creature]]]:
+    def _declare_blockers_step(
+            self, P_A_index: List[int],
+            P_B: Optional[List[Tuple[int, Creature]]] = None,
+            b: Optional[List[Tuple[int, Tuple[int, Creature]]]] = None
+    ) -> List[List[Tuple[int, Creature]]]:
         raise NotImplementedError
 
 def all_playable_pairs(

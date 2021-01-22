@@ -30,8 +30,10 @@ class SampleGame(Game, State):
                  player_fixed_ordering: Optional[List[Card]] = None,
                  enemy_fixed_ordering: Optional[List[Card]] = None,
                  was_switch: bool = False,
-                 wait_select_attackers: List[Tuple[int, Creature]] = None,
-                 selected_attacker: List[Tuple[int, Creature]] = None):
+                 wait_select_attackers: Optional[List[Tuple[int, Creature]]] = None,
+                 selected_attacker: Optional[List[Tuple[int, Creature]]] = None,
+                 wait_select_blockers: Optional[List[Tuple[int, Creature]]] = None,
+                 selected_blocker: Optional[List[Tuple[int, Tuple[int, Creature]]]] = None):
         super().__init__()
         if wait_select_spells is None:
             wait_select_spells = []
@@ -39,6 +41,10 @@ class SampleGame(Game, State):
             wait_select_attackers = []
         if selected_attacker is None:
             selected_attacker = []
+        if wait_select_blockers is None:
+            wait_select_blockers = []
+        if selected_blocker is None:
+            selected_blocker = []
         game: Game = player.game
         self.reward: float = 0
         self.ended: bool = False
@@ -52,6 +58,8 @@ class SampleGame(Game, State):
         self.wait_select_spells: List[Tuple[int, Creature]] = copy.deepcopy(wait_select_spells)
         self.wait_select_attackers: List[Tuple[int, Creature]] = copy.deepcopy(wait_select_attackers)
         self.selected_attacker: List[Tuple[int, Creature]] = copy.deepcopy(selected_attacker)
+        self.wait_select_blockers: List[Tuple[int, Creature]] = copy.deepcopy(wait_select_blockers)
+        self.selected_blocker: List[Tuple[int, Tuple[int, Creature]]] = copy.deepcopy(selected_blocker)
         self.was_switch: bool = was_switch
         if game.winner is not None:
             self.reason = game.reason
@@ -94,7 +102,9 @@ class SampleGame(Game, State):
 
     def next(self, now: Timing = None, wait_select_spells: bool = False,
              config: Optional['MtGConfig'] = None, was_swich: bool = False,
-             wait_select_attackers: bool = False, selected_attacker: bool = False) -> 'SampleGame':
+             wait_select_attackers: bool = False, selected_attacker: bool = False,
+             wait_select_blockers: bool = False,
+             selected_blocker: bool = False) -> 'SampleGame':
         if now is None:
             now = self.now
         if config is None:
@@ -108,7 +118,9 @@ class SampleGame(Game, State):
             self.enemy_order if was_swich else self.player_order,
             was_swich,
             self.wait_select_attackers if wait_select_attackers else None,
-            self.selected_attacker if selected_attacker else None
+            self.selected_attacker if selected_attacker else None,
+            self.wait_select_blockers if wait_select_blockers else None,
+            self.selected_blocker if selected_blocker else None
         )
 
     def _play_spells(self, indexes: List[int]):
@@ -134,25 +146,8 @@ class SampleGame(Game, State):
     @property
     def legal_actions(self) -> List['SampleGame']:
         if self.legal_action is None:
-            if self.now == Timing.SELECT_ATTACKER:
-                creatures: List[Tuple[int, Creature]] = self.get_indexed_fields(self.non_active_users()[0],
-                                                                                type=Creature)
-                p_b: Iterable[Tuple[int, ...]] = combinations_with_replacement(
-                    range(0, self.tmp_attacker.__len__() + 1), creatures.__len__())
-                nexts: List[SampleGame] = []
-                for t in p_b:
-                    next: SampleGame = self.next(Timing.SELECT_BLOCKER, was_swich=True)
-                    B: List[List[Tuple[int, Creature]]] = [[] for _ in range(self.tmp_attacker.__len__())]
-                    for i in range(t.__len__()):
-                        if t[i] == self.tmp_attacker.__len__():
-                            continue
-                        B[t[i]].append(creatures[i])
-                    for i in range(B.__len__()):
-                        next.declare_blokers(i, get_keys_tuple_list(B[i]))
-                    next.next_params["blocker"] = B
-                    nexts.append(next)
-                self.legal_action = nexts
-
+            if self.now == Timing.SELECT_ATTACKER or self.now == Timing.SELECTED_ATTACKER:
+                self.legal_action = self.legal_select_blocker()
             elif self.now == Timing.SELECT_BLOCKER or self.now == Timing.BEFORE_LAND:
                 self.legal_action = self.legal_play_land()
 
@@ -163,6 +158,48 @@ class SampleGame(Game, State):
                 self.legal_action = self.legal_select_attacker(self.now == Timing.AFTER_START)
 
         return self.legal_action
+
+    def legal_select_blocker(self):
+        creatures: List[Tuple[int, Creature]] = self.get_indexed_fields(self.non_active_users()[0],
+                                                                        type=Creature)
+
+        if self.config.binary_blocker:
+            future: List[SampleGame] = []
+            for i in range(self.tmp_attacker.__len__() + 1):
+                next: SampleGame = self.next(
+                    Timing.SELECTED_ATTACKER if self.wait_select_blockers.__len__() > 1 else Timing.SELECT_BLOCKER,
+                    was_swich=self.now == Timing.SELECT_ATTACKER,
+                    wait_select_blockers=True,
+                    selected_blocker=True
+                )
+                creature: Tuple[int, Creature] = next.wait_select_blockers.pop(0)
+                next.next_params["blocker"] = (i, creature[0])
+                next.selected_blocker.append((i, creature))
+                if self.wait_select_blockers.__len__() == 1:
+                    B: List[List[int]] = [[] for _ in range(self.tmp_attacker.__len__())]
+                    for tpl in next.selected_blocker:
+                        if tpl[0] != self.tmp_attacker:
+                            B[tpl[0]].append(tpl[1][0])
+                    for j in range(B.__len__()):
+                        next.declare_blokers(i, B[i])
+                future.append(next)
+            return future
+
+        p_b: Iterable[Tuple[int, ...]] = combinations_with_replacement(
+            range(0, self.tmp_attacker.__len__() + 1), creatures.__len__())
+        nexts: List[SampleGame] = []
+        for t in p_b:
+            next: SampleGame = self.next(Timing.SELECT_BLOCKER, was_swich=True)
+            B: List[List[int]] = [[] for _ in range(self.tmp_attacker.__len__())]
+            for i in range(t.__len__()):
+                if t[i] == self.tmp_attacker.__len__():
+                    continue
+                B[t[i]].append(creatures[i][0])
+            for i in range(B.__len__()):
+                next.declare_blokers(i, B[i])
+            next.next_params["blocker"] = B
+            nexts.append(next)
+        return nexts
 
     def legal_play_land(self) -> List['SampleGame']:
         if self.config.play_land:
@@ -286,6 +323,9 @@ class SampleGame(Game, State):
                     self.non_active_users()[0].declare_blockers_step(self.tmp_attacker)
             else:
                 self.active_user.declare_attackers_step()
+        elif self.now == Timing.SELECTED_ATTACKER:
+            self.non_active_users()[0].declare_blockers_step(self.tmp_attacker, self.wait_select_blockers,
+                                                             self.selected_blocker)
         elif self.now == Timing.SELECT_ATTACKER:
             self.non_active_users()[0].declare_blockers_step(self.tmp_attacker)
         elif self.now == Timing.SELECT_BLOCKER:
