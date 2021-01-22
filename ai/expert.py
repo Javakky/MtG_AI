@@ -267,19 +267,24 @@ class Expert(AI):
             i -= 1
         return A
 
-    def declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None, A: Optional[List[Tuple[int, Creature]]] = None) -> NoReturn:
+    def declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None,
+                               A: Optional[List[Tuple[int, Creature]]] = None) -> NoReturn:
         A: List[int] = self._declare_attackers_step(P_A, A)
         self.game.declare_attackers(A)
         return
 
-    def _declare_blockers_step(self, P_A_index: List[int]) -> List[List[Tuple[int, Creature]]]:
+    def _declare_blockers_step(self, P_A_index: List[int],
+                               P_B: Optional[List[Tuple[int, Creature]]] = None,
+                               b: Optional[List[Tuple[int, Tuple[int, Creature]]]] = None) -> List[
+        List[Tuple[int, Creature]]]:
         P_A: List[Tuple[int, Tuple[int, Creature]]] = []
         for i in range(P_A_index.__len__()):
             P_A.append(
                 (i, (P_A_index[i], self.game.get_field(self.game.non_self_users(self)[0], P_A_index[i], Creature)))
             )
         P_A = sorted(P_A, key=lambda x: (x[1][1].power, x[1][1].mana_cost.count()))
-        P_B: List[Tuple[int, Creature]] = self.game.get_indexed_fields(self, True, Creature)
+        if P_B is None:
+            P_B: List[Tuple[int, Creature]] = self.game.get_indexed_fields(self, True, Creature)
         if P_B.__len__() == 0:
             return []
 
@@ -292,6 +297,10 @@ class Expert(AI):
 
         i: int = P_A.__len__() - 1
         B: List[List[Tuple[int, Creature]]] = [[] for i in range(P_A.__len__())]
+        if b is not None:
+            for _b in b:
+                if _b[0] < P_A.__len__():
+                    B[_b[0]].append(_b[1])
         while P_B.__len__() != 0 and i >= 0:
             for _ in [0]:
                 b: List[Tuple[int, Creature]] = find_one_sidedly_destroied_smaller_cost_pair(P_A[i][1][1], P_B)
@@ -324,8 +333,10 @@ class Expert(AI):
             i -= 1
         return B
 
-    def declare_blockers_step(self, P_A_index: List[int]) -> NoReturn:
-        B: List[List[Tuple[int, Creature]]] = self._declare_blockers_step(P_A_index)
+    def declare_blockers_step(self, P_A_index: List[int],
+                              P_B: Optional[List[Tuple[int, Creature]]] = None,
+                              b: Optional[List[Tuple[int, Tuple[int, Creature]]]] = None) -> NoReturn:
+        B: List[List[Tuple[int, Creature]]] = self._declare_blockers_step(P_A_index, P_B, b)
         for i in range(B.__len__()):
             self.game.declare_blokers(i, get_keys_tuple_list(B[i]))
         self.game.combat_damage()

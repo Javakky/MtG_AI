@@ -44,11 +44,17 @@ class IUser(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None, A: Optional[List[Tuple[int, Creature]]] = None) -> NoReturn:
+    def declare_attackers_step(self,
+                               P_A: Optional[List[Tuple[int, Creature]]] = None,
+                               A: Optional[List[Tuple[int, Creature]]] = None
+                               ) -> NoReturn:
         raise NotImplementedError
 
     @abstractmethod
-    def declare_blockers_step(self, attackers: List[int]) -> NoReturn:
+    def declare_blockers_step(self, attackers: List[int],
+                              P_B: Optional[List[Tuple[int, Creature]]] = None,
+                              b: Optional[List[Tuple[int, Tuple[int, Creature]]]] = None
+                              ) -> NoReturn:
         raise NotImplementedError
 
     @abstractmethod

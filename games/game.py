@@ -27,8 +27,8 @@ class Game:
         self.winner: Optional[IUser] = None
         self.reason: str = ""
 
-    def set_user(self, user) -> NoReturn:
-        self.players[user] = Player(user.get_deck())
+    def set_user(self, user: 'IUser') -> NoReturn:
+        self.players[user]: IUser = Player(user.get_deck())
 
     def active_player(self) -> Player:
         return self.players[self.active_user]
@@ -42,7 +42,7 @@ class Game:
             raise Exception
         return players
 
-    def non_self_users(self, self1) -> List:
+    def non_self_users(self, self1) -> List['IUser']:
         users: List[IUser] = []
         for k in self.players.keys():
             if k != self1:
@@ -51,10 +51,10 @@ class Game:
             raise Exception
         return users
 
-    def non_active_users(self) -> List:
+    def non_active_users(self) -> List['IUser']:
         return self.other_users(self.active_user)
 
-    def other_users(self, user) -> List:
+    def other_users(self, user) -> List['IUser']:
         others: List[IUser] = []
         for k in self.players.keys():
             if k != user:
@@ -69,7 +69,7 @@ class Game:
         choose_player: IUser = choice(list(self.players.keys()))
         choose_player.choose_play_first()
 
-    def choose_play_first(self, user, play_first: bool) -> NoReturn:
+    def choose_play_first(self, user: 'IUser', play_first: bool) -> NoReturn:
         if play_first:
             self.play_first = user
             self.active_user = user
@@ -251,22 +251,23 @@ class Game:
             user.ending_the_game(False)
             pass
 
-    def get_hands(self, user, type: Type[C] = Card) -> List[C]:
+    def get_hands(self, user: 'IUser', type: Type[C] = Card) -> List[C]:
         return self.players[user].get_hands(type)
 
-    def get_graveyards(self, user, type: Type[C] = Card) -> List[C]:
+    def get_graveyards(self, user: 'IUser', type: Type[C] = Card) -> List[C]:
         return self.players[user].get_graveyards(type)
 
-    def get_hand(self, user, index: int, type: Type[P] = Permanent) -> P:
+    def get_hand(self, user: 'IUser', index: int, type: Type[P] = Permanent) -> P:
         return self.players[user].get_hand(index, type)
 
-    def get_field(self, user, index: int, type: Type[P] = Permanent) -> P:
+    def get_field(self, user: 'IUser', index: int, type: Type[P] = Permanent) -> P:
         return self.players[user].get_field(index, type)
 
-    def get_fields(self, user, untapped: bool = None, type: Type[P] = Permanent) -> List[P]:
+    def get_fields(self, user: 'IUser', untapped: bool = None, type: Type[P] = Permanent) -> List[P]:
         return self.players[user].field.get_cards(untapped, type)
 
-    def get_indexed_fields(self, user, untapped: bool = None, type: Type[P] = Permanent) -> List[Tuple[int, P]]:
+    def get_indexed_fields(self, user: 'IUser', untapped: bool = None, type: Type[P] = Permanent) -> List[
+        Tuple[int, P]]:
         cards: List[Permanent] = self.get_fields(user)
         result: List[Tuple[int, P]] = []
         for i in range(cards.__len__()):
@@ -275,7 +276,7 @@ class Game:
                 result.append((i, cards[i]))
         return result
 
-    def get_indexed_hands(self, user, type: Type[C] = Card) -> List[Tuple[int, C]]:
+    def get_indexed_hands(self, user: 'IUser', type: Type[C] = Card) -> List[Tuple[int, C]]:
         cards: List[Card] = self.get_hands(user)
         result: List[Tuple[int, C]] = []
         for i in range(cards.__len__()):
@@ -286,5 +287,5 @@ class Game:
     def get_remain_mana(self) -> int:
         return self.players[self.active_user].get_remain_mana()
 
-    def get_life(self, user) -> int:
+    def get_life(self, user: 'IUser') -> int:
         return self.players[user].get_life()

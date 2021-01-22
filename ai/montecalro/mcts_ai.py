@@ -144,7 +144,7 @@ class MCTS_AI(AI):
                                 A: Optional[List[Tuple[int, Creature]]] = None) -> List[int]:
         if self.config.attacked_policy != MCTS_AI:
             from ai.montecalro.mtg_config import MtGConfig, MtGConfigBuilder
-            game: SampleGame = SampleGame(self, Timing.SELECT_ATTACKER,
+            game: SampleGame = SampleGame(self, Timing.PLAY_SPELL,
                                           config=MtGConfigBuilder()
                                           .set_player_ai(self.config.attacked_policy)
                                           .set_enemy_ai(self.config.attacked_policy)
@@ -155,8 +155,6 @@ class MCTS_AI(AI):
             return attacker
 
         if self.config.binary_attacker:
-            if not self.binary_selecting_attacker:
-                self.binary_selecting_attacker = True
 
             selected: List[Tuple[int, Creature]] = []
 
@@ -165,7 +163,6 @@ class MCTS_AI(AI):
                 key=lambda x: (x[1].power, x[1].mana_cost.count()),
                 reverse=True
             )
-
             while target.__len__() > 0:
                 params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
                     SampleGame(
@@ -195,7 +192,10 @@ class MCTS_AI(AI):
         else:
             return []
 
-    def _declare_blockers_step(self, P_A_index: List[int]) -> List[List[Tuple[int, Creature]]]:
+    def _declare_blockers_step(self, attackers: List[int],
+                               P_B: Optional[List[Tuple[int, Creature]]] = None,
+                               b: Optional[List[Tuple[int, Tuple[int, Creature]]]] = None
+                               ) -> List[List[Tuple[int, Creature]]]:
         if self.config.blocked_policy != MCTS_AI:
             from ai.montecalro.mtg_config import MtGConfig, MtGConfigBuilder
             game: SampleGame = SampleGame(self, Timing.SELECT_ATTACKER,
@@ -209,10 +209,40 @@ class MCTS_AI(AI):
                 game.tmp_attacker)
             return blockers
 
+        if self.config.binary_blocker:
+            print("attacker")
+
+            selected: List[List[Tuple[int, Creature]]] = []
+            target: List[Tuple[int, Creature]] = sorted(
+                self.game.get_indexed_fields(self, True, Creature),
+                key=lambda x: (x[1].power, x[1].mana_cost.count()),
+                reverse=True
+            )
+
+            while target.__len__() > 0:
+                params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
+                    SampleGame(
+                        self,
+                        Timing.SELECTED_ATTACKER,
+                        self.config,
+                        wait_select_blockers=target
+                    ),
+                    self.config
+                ).next_params
+
+                if "blocker" in params:
+                    for i in target:
+                        if i[0] == cast(Tuple[int, int], params["blocker"])[1]:
+                            if cast(Tuple[int, int], params["blocker"])[1] < self.game.tmp_attacker.__len__():
+                                selected[cast(Tuple[int, int], params["blocker"])[1]].append(i)
+                            target.remove(i)
+                            break
+            return selected
+
         if self.game.tmp_attacker.__len__() == 0:
             return []
         params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
-            SampleGame(self, Timing.SELECT_ATTACKER, self.config),
+            SampleGame(self.game.active_user, Timing.SELECT_ATTACKER, self.config),
             self.config
         ).next_params
         if "blocker" in params:
@@ -220,7 +250,9 @@ class MCTS_AI(AI):
             return blockers
         return []
 
-    def declare_blockers_step(self, attackers: List[int]) -> NoReturn:
+    def declare_blockers_step(self, attackers: List[int],
+                              P_B: Optional[List[Tuple[int, Creature]]] = None,
+                              b: Optional[List[Tuple[int, Tuple[int, Creature]]]] = None) -> NoReturn:
         blockers: List[List[Tuple[int, Creature]]] = self._declare_blockers_step(attackers)
         for i in range(blockers.__len__()):
             self.game.declare_blokers(i, get_keys_tuple_list(blockers[i]))

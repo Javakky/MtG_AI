@@ -1,7 +1,10 @@
-from typing import Type, TypeVar
+from typing import Type, TypeVar, TYPE_CHECKING
 
 from ai.ai import AI
-from ai.montecalro.mcts_ai import MCTS_AI
+from ai.expert import Expert
+
+if TYPE_CHECKING:
+    from ai.montecalro.mcts_ai import MCTS_AI
 from ai.reduced import Reduced
 from util.montecalro.config import ConfigBuilder, Config
 
@@ -11,6 +14,7 @@ A = TypeVar('A', bound=AI)
 class MtGConfig(Config):
     def __init__(self, builder: 'MtGConfigBuilder'):
         super().__init__(builder)
+        self.binary_blocker: bool = builder.binary_blocker
         self.discount: float = builder.discount
         self.win_reward: int = builder.win_reward
         self.lose_reward: int = builder.lose_reward
@@ -29,8 +33,8 @@ class MtGConfig(Config):
 class MtGConfigBuilder(ConfigBuilder):
     def __init__(self):
         super().__init__()
-        self.blocked_policy: Type[A] = MCTS_AI
-        self.attacked_policy: Type[A] = MCTS_AI
+        self.blocked_policy: Type[A] = Expert
+        self.attacked_policy: Type[A] = Expert
         self.discount: float = 0.99
         self.win_reward: int = 1
         self.lose_reward: int = 0
@@ -42,6 +46,7 @@ class MtGConfigBuilder(ConfigBuilder):
         self.player_ai: Type[A] = Reduced
         self.enemy_ai: Type[A] = Reduced
         self.binary_attacker: bool = False
+        self.binary_blocker: bool = False
 
     def set_discount(self, value: float) -> 'MtGConfigBuilder':
         self.discount = value
@@ -69,7 +74,14 @@ class MtGConfigBuilder(ConfigBuilder):
 
     def set_binary_attacker(self, value: bool) -> 'MtGConfigBuilder':
         self.binary_attacker = value
+        from ai.montecalro.mcts_ai import MCTS_AI
         self.attacked_policy = MCTS_AI
+        return self
+
+    def set_binary_blocker(self, value: bool) -> 'MtGConfigBuilder':
+        self.binary_blocker = value
+        from ai.montecalro.mcts_ai import MCTS_AI
+        self.blocked_policy = MCTS_AI
         return self
 
     def set_interesting_order(self, use: bool, find_count: int = 5) -> 'MtGConfigBuilder':
