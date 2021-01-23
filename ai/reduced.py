@@ -76,6 +76,8 @@ class Reduced(AI):
 
         if A is None:
             A: List[int] = []
+        else:
+            A: List[int] = get_keys_tuple_list(A)
         for i in range(P_A.__len__()):
             if random.random() >= 0.5:
                 A.append(P_A[i][0])
