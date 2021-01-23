@@ -20,7 +20,7 @@ from games.cards.land import Land
 from games.game import Game
 from games.i_user import IUser
 from util.montecalro.state import State
-from util.util import get_keys_tuple_list, combinations_all
+from util.util import get_keys_tuple_list, combinations_all, print_cards_of_index, get_values_tuple_list
 
 
 class SampleGame(Game, State):
@@ -61,10 +61,6 @@ class SampleGame(Game, State):
         self.wait_select_blockers: List[Tuple[int, Creature]] = copy.deepcopy(wait_select_blockers)
         self.selected_blocker: List[Tuple[int, Tuple[int, Creature]]] = copy.deepcopy(selected_blocker)
         self.was_switch: bool = was_switch
-        if game.winner is not None:
-            self.reason = game.reason
-            self.winner = game.winner
-            self.ending_the_game(game.winner)
         self.player: AI = self.config.player_ai(self, "player")
         self.enemy: AI = self.config.enemy_ai(self, "enemy")
         self.active_user = self.player if game.active_user == player else self.enemy
@@ -82,6 +78,10 @@ class SampleGame(Game, State):
             cast(SamplePlayer, self.players[self.player]).set_order(self.player_order)
             cast(SamplePlayer, self.players[self.enemy]).set_order(self.enemy_order)
 
+        if game.winner is not None:
+            self.reason = game.reason
+            self.winner = game.winner
+            self.ending_the_game(game.winner)
     def is_active(self) -> bool:
         return self.active_user == self.player
 
@@ -117,10 +117,10 @@ class SampleGame(Game, State):
             self.player_order if was_swich else self.enemy_order,
             self.enemy_order if was_swich else self.player_order,
             was_swich,
-            self.wait_select_attackers if wait_select_attackers else None,
-            self.selected_attacker if selected_attacker else None,
-            self.wait_select_blockers if wait_select_blockers else None,
-            self.selected_blocker if selected_blocker else None
+            self.wait_select_attackers,
+            self.selected_attacker,
+            self.wait_select_blockers,
+            self.selected_blocker
         )
 
     def _play_spells(self, indexes: List[int]):
@@ -162,10 +162,9 @@ class SampleGame(Game, State):
     def legal_select_blocker(self):
         creatures: List[Tuple[int, Creature]] = self.get_indexed_fields(self.non_active_users()[0],
                                                                         type=Creature)
-
         if self.config.binary_blocker:
             future: List[SampleGame] = []
-            for i in range(self.tmp_attacker.__len__() + 1):
+            for i in reversed(range(self.tmp_attacker.__len__() + 1)):
                 next: SampleGame = self.next(
                     Timing.SELECTED_ATTACKER if self.wait_select_blockers.__len__() > 1 else Timing.SELECT_BLOCKER,
                     was_swich=self.now == Timing.SELECT_ATTACKER,
@@ -175,14 +174,16 @@ class SampleGame(Game, State):
                 creature: Tuple[int, Creature] = next.wait_select_blockers.pop(0)
                 next.next_params["blocker"] = (i, creature[0])
                 next.selected_blocker.append((i, creature))
-                if self.wait_select_blockers.__len__() == 1:
-                    B: List[List[int]] = [[] for _ in range(self.tmp_attacker.__len__())]
+                if next.wait_select_blockers.__len__() == 0:
+                    B: List[List[int]] = [[] for _ in range(next.tmp_attacker.__len__())]
                     for tpl in next.selected_blocker:
-                        if tpl[0] != self.tmp_attacker:
+                        if tpl[0] != next.tmp_attacker.__len__():
                             B[tpl[0]].append(tpl[1][0])
                     for j in range(B.__len__()):
-                        next.declare_blokers(i, B[i])
+                        next.declare_blokers(j, B[j])
                 future.append(next)
+            for i in future:
+                print("blocker: " + str(i.selected_blocker.__len__()))
             return future
 
         p_b: Iterable[Tuple[int, ...]] = combinations_with_replacement(
@@ -247,15 +248,15 @@ class SampleGame(Game, State):
                 play._play_spells([spell[0]])
                 break
             else:
-                tmp = self.next(Timing.PLAY_SPELL)
+                tmp = self.next(Timing.PLAY_SPELL, was_swich=True)
                 tmp.next_params["play_end"] = True
                 return [tmp]
             return [play, not_play]
 
-        nexts: List[SampleGame] = [self.next(Timing.PLAY_SPELL)]
+        nexts: List[SampleGame] = [self.next(Timing.PLAY_SPELL, was_swich=True)]
 
         for indexes in playable:
-            next: SampleGame = self.next(Timing.PLAY_SPELL)
+            next: SampleGame = self.next(Timing.PLAY_SPELL, was_swich=True)
             next._play_spells(get_keys_tuple_list(indexes))
             next.next_params["spell"] = indexes
             nexts.append(next)
@@ -324,8 +325,9 @@ class SampleGame(Game, State):
             else:
                 self.active_user.declare_attackers_step()
         elif self.now == Timing.SELECTED_ATTACKER:
-            self.non_active_users()[0].declare_blockers_step(self.tmp_attacker, self.wait_select_blockers,
-                                                             self.selected_blocker)
+            if self.config.binary_blocker:
+                self.non_active_users()[0].declare_blockers_step(self.tmp_attacker, self.wait_select_blockers,
+                                                                 self.selected_blocker)
         elif self.now == Timing.SELECT_ATTACKER:
             self.non_active_users()[0].declare_blockers_step(self.tmp_attacker)
         elif self.now == Timing.SELECT_BLOCKER:
@@ -400,6 +402,7 @@ class SampleGame(Game, State):
         if next == Timing.SELECT_ATTACKER:
             if self.now != Timing.AFTER_START:
                 play._start_phase()
+                game._start_phase()
             attacker = cast(Expert, game.active_user)._declare_attackers_step()
             if attacker.__len__() == 0:
                 return None, None

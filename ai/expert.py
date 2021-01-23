@@ -257,6 +257,8 @@ class Expert(AI):
 
         if A is None:
             A: List[int] = []
+        else:
+            A:List[int] = get_keys_tuple_list(A)
         i: int = P_A.__len__() - 1
         while A.__len__() < a_max and i > 0:
             if not exists_one_sidedly_destroied_pair(P_A[i][1], P_B) \
