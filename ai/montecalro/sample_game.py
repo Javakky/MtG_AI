@@ -182,8 +182,6 @@ class SampleGame(Game, State):
                     for j in range(B.__len__()):
                         next.declare_blokers(j, B[j])
                 future.append(next)
-            for i in future:
-                print("blocker: " + str(i.selected_blocker.__len__()))
             return future
 
         p_b: Iterable[Tuple[int, ...]] = combinations_with_replacement(
@@ -277,6 +275,9 @@ class SampleGame(Game, State):
                 selected_attacker=True,
                 was_swich=not myturn
             )
+            if not myturn:
+                play._start_phase()
+                not_play._start_phase()
             creature: Tuple[int, Creature] = play.wait_select_attackers.pop(0)
             nota_creature: Tuple[int, Creature] = not_play.wait_select_attackers.pop(0)
             play.next_params["attacker"] = [creature]
@@ -284,7 +285,7 @@ class SampleGame(Game, State):
             not_play.next_params["attacker"] = [nota_creature]
             play.selected_attacker.append(creature)
 
-            if self.wait_select_attackers.__len__() == 1:
+            if play.wait_select_attackers.__len__() == 0:
                 play._declare_attackers(get_keys_tuple_list(play.selected_attacker))
 
             return [play, not_play]
@@ -317,11 +318,7 @@ class SampleGame(Game, State):
             self.pass_priority()
         elif self.now == Timing.AFTER_START:
             if self.config.binary_attacker:
-                if self.wait_select_attackers.__len__() > 0:
-                    self.active_user.declare_attackers_step(self.wait_select_attackers, self.selected_attacker)
-                else:
-                    self._declare_attackers(get_keys_tuple_list(self.selected_attacker))
-                    self.non_active_users()[0].declare_blockers_step(self.tmp_attacker)
+                self.active_user.declare_attackers_step(self.wait_select_attackers, self.selected_attacker)
             else:
                 self.active_user.declare_attackers_step()
         elif self.now == Timing.SELECTED_ATTACKER:
