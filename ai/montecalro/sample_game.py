@@ -164,6 +164,12 @@ class SampleGame(Game, State):
                                                                         type=Creature)
         if self.config.binary_blocker:
             future: List[SampleGame] = []
+            if self.wait_select_blockers.__len__() == 0:
+                self.wait_select_blockers = sorted(
+                    self.get_indexed_fields(self.non_active_users()[0], True, Creature),
+                    key=lambda x: (x[1].mana_cost.count(), x[1].power),
+                    reverse=True
+                )
             for i in reversed(range(self.tmp_attacker.__len__() + 1)):
                 next: SampleGame = self.next(
                     Timing.SELECTED_ATTACKER if self.wait_select_blockers.__len__() > 1 else Timing.SELECT_BLOCKER,
@@ -223,9 +229,14 @@ class SampleGame(Game, State):
 
         if self.config.binary_spell:
             if self.wait_select_spells.__len__() == 0:
-                tmp = self.next(Timing.PLAY_SPELL)
-                tmp.next_params["play_end"] = True
-                return [tmp]
+                self.wait_select_spells = list(filter(
+                    lambda x: x[1].mana_cost.count() <= self.get_remain_mana(),
+                    sorted(
+                        self.get_indexed_hands(self.active_user, Creature),
+                        key=lambda x: (x[1].mana_cost.count()),
+                        reverse=True
+                    )
+                ))
             play: SampleGame = self.next(Timing.PLAY_LAND, wait_select_spells=True)
             not_play: SampleGame = self.next(Timing.PLAY_LAND, wait_select_spells=True)
             while play.wait_select_spells.__len__() > 0:
@@ -263,6 +274,12 @@ class SampleGame(Game, State):
 
     def legal_select_attacker(self, myturn: bool) -> List['SampleGame']:
         if self.config.binary_attacker:
+            if self.wait_select_attackers.__len__() == 0:
+                self.wait_select_attackers = sorted(
+                    self.get_indexed_fields(self.active_user, True, Creature),
+                    key=lambda x: (x[1].mana_cost.count(), x[1].power),
+                    reverse=True
+                )
             play: SampleGame = self.next(
                 Timing.AFTER_START if self.wait_select_attackers.__len__() > 1 else Timing.SELECT_ATTACKER,
                 wait_select_attackers=True,
