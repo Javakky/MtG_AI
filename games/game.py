@@ -30,6 +30,9 @@ class Game:
     def set_user(self, user: 'IUser') -> NoReturn:
         self.players[user]: IUser = Player(user.get_deck())
 
+    def set_order(self, user: 'IUser', order: List[Card]):
+        self.players[user].set_order(order)
+
     def active_player(self) -> Player:
         return self.players[self.active_user]
 
@@ -61,12 +64,12 @@ class Game:
                 others.append(k)
         return others
 
-    def starting_the_game(self) -> NoReturn:
+    def starting_the_game(self, first: Optional['IUser'] = None) -> NoReturn:
         for user in self.players:
             self.players[user].first_draw()
         for k in self.players.keys():
             k.draw_starting_hand(self.players[k].get_hands())
-        choose_player: IUser = choice(list(self.players.keys()))
+        choose_player: IUser = choice(list(self.players.keys())) if first is None else first
         choose_player.choose_play_first()
 
     def choose_play_first(self, user: 'IUser', play_first: bool) -> NoReturn:

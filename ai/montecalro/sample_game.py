@@ -257,15 +257,15 @@ class SampleGame(Game, State):
                 play._play_spells([spell[0]])
                 break
             else:
-                tmp = self.next(Timing.PLAY_SPELL, was_swich=True)
+                tmp = self.next(Timing.PLAY_SPELL)
                 tmp.next_params["play_end"] = True
                 return [tmp]
             return [play, not_play]
 
-        nexts: List[SampleGame] = [self.next(Timing.PLAY_SPELL, was_swich=True)]
+        nexts: List[SampleGame] = [self.next(Timing.PLAY_SPELL)]
 
         for indexes in playable:
-            next: SampleGame = self.next(Timing.PLAY_SPELL, was_swich=True)
+            next: SampleGame = self.next(Timing.PLAY_SPELL)
             next._play_spells(get_keys_tuple_list(indexes))
             next.next_params["spell"] = indexes
             nexts.append(next)

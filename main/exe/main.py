@@ -2,7 +2,7 @@ import json
 import random
 import sys
 import time
-from typing import Tuple, Type, TypeVar
+from typing import Tuple, Type, TypeVar, List, Optional
 
 from ai.ai import AI
 from ai.expert import Expert
@@ -10,13 +10,15 @@ from ai.montecalro.mcts_ai import MCTS_AI
 from ai.montecalro.mtg_config import MtGConfigBuilder, MtGConfig
 from ai.random import RandomPlayer
 from ai.reduced import Reduced
+from deck.deck_list import get_sample_deck
+from games.cards.card import Card
 from games.game import Game
 from util.log import write
 
 T = TypeVar("T", bound=AI)
 
 
-def main(opponent: Type[T], player_config: MtGConfig, opponent_config: MtGConfig):
+def main(opponent: Type[T], player_config: MtGConfig, opponent_config: MtGConfig, order: Tuple[List[Card], List[Card]], first: bool):
     sys.setrecursionlimit(10 ** 9)
     game: Game = Game()
     user1 = MCTS_AI(game, "ai_1", player_config)
@@ -24,7 +26,9 @@ def main(opponent: Type[T], player_config: MtGConfig, opponent_config: MtGConfig
         user2 = MCTS_AI(game, "ai_2", opponent_config)
     else:
         user2 = opponent(game, "ai_2")
-    game.starting_the_game()
+    game.set_order(user1, order[0])
+    game.set_order(user2, order[1])
+    game.starting_the_game(user1 if first else user2)
     return game.winner.name, game.reason
 
 
@@ -132,6 +136,10 @@ def getConfig() -> Tuple[Type[T], MtGConfig, MtGConfig]:
             player_conf.set_binary_attacker(True)
         elif sys.argv[index] == "--opponent-binary-attacker":
             opponent_conf.set_binary_attacker(True)
+        elif sys.argv[index] == "--binary-blocker":
+            player_conf.set_binary_blocker(True)
+        elif sys.argv[index] == "--opponent-binary-blocker":
+            opponent_conf.set_binary_blocker(True)
         else:
             raise Exception("存在しないオプションです")
         index += 1
@@ -144,17 +152,23 @@ if __name__ == '__main__':
     msg = opponent.__name__ + "\n" + json.dumps(vars(player_config), default=lambda x: x.__name__) + "\n" + json.dumps(vars(opponent_config), default=lambda x: x.__name__)
     write("config_", msg, "")
     result = []
-    for j in range(100):
+    for j in range(5):
         seed = time.time()
         random.seed(seed)
         winner = {"ai_1": 0, "ai_2": 0}
         reason = {"LO": 0, "DAMAGE": 0}
-        for i in range(100):
-            tpl = main(opponent, player_config, opponent_config)
+        A = get_sample_deck()
+        B = get_sample_deck()
+        random.shuffle(A)
+        random.shuffle(B)
+        for i in range(4):
+            tpl = main(opponent, player_config, opponent_config,
+                       (A if i < 2 else B, B if i < 2 else A),
+                       i % 2 == 0
+                       )
+            print(str(i))
             winner[tpl[0]] += 1
             reason[tpl[1]] += 1
-            if i % 10 == 0:
-                print((j) * 100 + (i))
         message: str = str(winner["ai_1"]) + "," \
                        + str(winner["ai_2"]) + "\n" \
                        + str(reason["LO"]) + "," \
