@@ -160,10 +160,9 @@ class MCTS_AI(AI):
 
             print("P_B")
             print_cards_of_index(self.game.get_indexed_fields(self.game.non_active_users()[0], True, type=Creature))
-
             target: List[Tuple[int, Creature]] = sorted(
                 self.game.get_indexed_fields(self, True, Creature),
-                key=lambda x: (x[1].mana_cost.count(), x[1].power),
+                key=lambda x: (x[1].power, x[1].mana_cost.count()),
                 reverse=True
             )
 

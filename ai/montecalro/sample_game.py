@@ -301,10 +301,8 @@ class SampleGame(Game, State):
             play.next_params["attack"] = True
             not_play.next_params["attacker"] = [nota_creature]
             play.selected_attacker.append(creature)
-
             if play.wait_select_attackers.__len__() == 0:
                 play._declare_attackers(get_keys_tuple_list(play.selected_attacker))
-
             return [play, not_play]
 
         if myturn:
@@ -414,7 +412,7 @@ class SampleGame(Game, State):
                 return None, None
             play._play_spells(spells)
         if next == Timing.SELECT_ATTACKER:
-            if self.now != Timing.AFTER_START:
+            if self.now == Timing.PLAY_SPELL:
                 play._start_phase()
                 game._start_phase()
             attacker = cast(Expert, game.active_user)._declare_attackers_step()
