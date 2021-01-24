@@ -23,6 +23,12 @@ class Player:
         self.played_land: bool = False
         self.library.shuffle()
 
+    def set_order(self, order: List[Card]):
+        deck: List[Card] = []
+        for card in order:
+            deck.append(self.library.pop(card.name))
+        self.library.cards = deck
+
     def first_draw(self) -> List[Card]:
         cards: List[Card] = []
         for i in range(7):
