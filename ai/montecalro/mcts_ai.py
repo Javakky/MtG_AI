@@ -158,11 +158,18 @@ class MCTS_AI(AI):
 
             selected: List[Tuple[int, Creature]] = []
 
+            print("P_B")
+            print_cards_of_index(self.game.get_indexed_fields(self.game.non_active_users()[0], True, type=Creature))
+
             target: List[Tuple[int, Creature]] = sorted(
                 self.game.get_indexed_fields(self, True, Creature),
-                key=lambda x: (x[1].power, x[1].mana_cost.count()),
+                key=lambda x: (x[1].mana_cost.count(), x[1].power),
                 reverse=True
             )
+
+            print("P_A")
+            print_cards_of_index(target)
+
             while target.__len__() > 0:
                 params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
                     SampleGame(
@@ -178,9 +185,14 @@ class MCTS_AI(AI):
                     for i in target:
                         if i[0] == cast(List[Tuple[int, Creature]], params["attacker"])[0][0]:
                             if "attack" in params and params["attack"]:
+                                print("select!")
                                 selected.append(i)
+                            else:
+                                print("pass!")
+                            print_cards_of_index([i])
                             target.remove(i)
                             break
+            print()
             return get_keys_tuple_list(selected)
 
         params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
@@ -210,18 +222,12 @@ class MCTS_AI(AI):
             return blockers
 
         if self.config.binary_blocker:
-            print("attacker")
-            for i in self.game.tmp_attacker:
-                print_cards([self.game.get_field(self.game.active_user, i)])
-
             selected: List[List[Tuple[int, Creature]]] = [[] for _ in range(self.game.tmp_attacker.__len__())]
             target: List[Tuple[int, Creature]] = sorted(
                 self.game.get_indexed_fields(self, True, Creature),
                 key=lambda x: (x[1].power, x[1].mana_cost.count()),
                 reverse=True
             )
-            print("P_B")
-            print_cards_of_index(target)
 
             while target.__len__() > 0:
                 params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
@@ -239,17 +245,8 @@ class MCTS_AI(AI):
                         if i[0] == cast(Tuple[int, int], params["blocker"])[1]:
                             if cast(Tuple[int, int], params["blocker"])[0] < self.game.tmp_attacker.__len__():
                                 selected[cast(Tuple[int, int], params["blocker"])[0]].append(i)
-                                print("attacked")
-                                print_cards([self.game.get_field(self.game.active_user, self.game.tmp_attacker[cast(Tuple[int, int], params["blocker"])[0]])])
-                                print("block!")
-                                print_cards_of_index([i])
-                            else:
-                                print("pass!")
-                                print_cards([self.game.get_field(self.game.non_active_users()[0], cast(Tuple[int, int], params["blocker"])[1])])
                             target.remove(i)
                             break
-
-            print()
             return selected
 
         if self.game.tmp_attacker.__len__() == 0:
