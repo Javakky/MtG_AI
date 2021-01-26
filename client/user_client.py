@@ -110,7 +110,8 @@ class UserClient(ConsoleUser):
         elif choosen == 5:
             self.game.pass_priority()
 
-    def declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None, A: Optional[List[Tuple[int, Creature]]] = None) -> NoReturn:
+    def declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None,
+                               A: Optional[List[Tuple[int, Creature]]] = None) -> NoReturn:
         if self.game.get_fields(self, True, Creature).__len__() < 1:
             self.game.declare_attackers([])
             return

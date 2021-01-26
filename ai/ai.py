@@ -62,7 +62,8 @@ class AI(ConsoleUser, metaclass=ABCMeta):
         self.game.assign_damage(attacker, blockers, find_damage_destroyable_max_cost_assign(point, _b))
 
     @abstractmethod
-    def _declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None, A: Optional[List[Tuple[int, Creature]]] = None) -> List[int]:
+    def _declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None,
+                                A: Optional[List[Tuple[int, Creature]]] = None) -> List[int]:
         raise NotImplementedError
 
     @abstractmethod
@@ -72,6 +73,7 @@ class AI(ConsoleUser, metaclass=ABCMeta):
             b: Optional[List[Tuple[int, Tuple[int, Creature]]]] = None
     ) -> List[List[Tuple[int, Creature]]]:
         raise NotImplementedError
+
 
 def all_playable_pairs(
         creatures: List[Tuple[int, Creature]], remain_mana: int

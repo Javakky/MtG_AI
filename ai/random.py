@@ -77,7 +77,8 @@ class RandomPlayer(AI):
                 self.selected = sorted(self.selected, key=lambda x: x[0], reverse=True)
             self.receive_priority()
 
-    def declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None, A: Optional[List[Tuple[int, Creature]]] = None) -> NoReturn:
+    def declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None,
+                               A: Optional[List[Tuple[int, Creature]]] = None) -> NoReturn:
         self.game.declare_attackers(self._declare_attackers_step(P_A, A))
 
     def _declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None,

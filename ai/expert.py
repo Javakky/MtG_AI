@@ -219,7 +219,8 @@ class Expert(AI):
         else:
             self.game.pass_priority()
 
-    def _declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None, A: Optional[List[Tuple[int, Creature]]] = None) -> List[int]:
+    def _declare_attackers_step(self, P_A: Optional[List[Tuple[int, Creature]]] = None,
+                                A: Optional[List[Tuple[int, Creature]]] = None) -> List[int]:
         if P_A is None:
             P_A: List[Tuple[int, Creature]] = sorted(
                 self.game.get_indexed_fields(self, True, Creature),
@@ -258,7 +259,7 @@ class Expert(AI):
         if A is None:
             A: List[int] = []
         else:
-            A:List[int] = get_keys_tuple_list(A)
+            A: List[int] = get_keys_tuple_list(A)
         i: int = P_A.__len__() - 1
         while A.__len__() < a_max and i > 0:
             if not exists_one_sidedly_destroied_pair(P_A[i][1], P_B) \

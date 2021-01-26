@@ -33,8 +33,9 @@ class MtGConfig(Config):
 class MtGConfigBuilder(ConfigBuilder):
     def __init__(self):
         super().__init__()
-        self.blocked_policy: Type[A] = Expert
-        self.attacked_policy: Type[A] = Expert
+        from ai.montecalro.mcts_ai import MCTS_AI
+        self.blocked_policy: Type[A] = MCTS_AI
+        self.attacked_policy: Type[A] = MCTS_AI
         self.discount: float = 0.99
         self.win_reward: int = 1
         self.lose_reward: int = 0

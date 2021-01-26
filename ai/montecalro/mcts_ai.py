@@ -12,7 +12,7 @@ from games.cards.creature import Creature
 from games.cards.land import Land
 from games.game import Game
 from util.montecalro.mcts import MCTS
-from util.util import get_keys_tuple_list, print_cards, print_cards_of_index
+from util.util import get_keys_tuple_list
 
 
 class MCTS_AI(AI):
@@ -158,16 +158,11 @@ class MCTS_AI(AI):
 
             selected: List[Tuple[int, Creature]] = []
 
-            print("P_B")
-            print_cards_of_index(self.game.get_indexed_fields(self.game.non_active_users()[0], True, type=Creature))
             target: List[Tuple[int, Creature]] = sorted(
                 self.game.get_indexed_fields(self, True, Creature),
-                key=lambda x: (x[1].power, x[1].mana_cost.count()),
+                key=lambda x: (x[1].power, x[1].mana_cost.count(), x[1].toughness),
                 reverse=True
             )
-
-            print("P_A")
-            print_cards_of_index(target)
 
             while target.__len__() > 0:
                 params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
@@ -184,14 +179,9 @@ class MCTS_AI(AI):
                     for i in target:
                         if i[0] == cast(List[Tuple[int, Creature]], params["attacker"])[0][0]:
                             if "attack" in params and params["attack"]:
-                                print("select!")
                                 selected.append(i)
-                            else:
-                                print("pass!")
-                            print_cards_of_index([i])
                             target.remove(i)
                             break
-            print()
             return get_keys_tuple_list(selected)
 
         params: Dict[str, object] = self.mcts.determinization_monte_carlo_tree_search_next_action(
