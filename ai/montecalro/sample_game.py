@@ -20,7 +20,7 @@ from games.cards.land import Land
 from games.game import Game
 from games.i_user import IUser
 from util.montecalro.state import State
-from util.util import get_keys_tuple_list, combinations_all, print_cards_of_index, get_values_tuple_list
+from util.util import get_keys_tuple_list, combinations_all
 
 
 class SampleGame(Game, State):
@@ -82,6 +82,7 @@ class SampleGame(Game, State):
             self.reason = game.reason
             self.winner = game.winner
             self.ending_the_game(game.winner)
+
     def is_active(self) -> bool:
         return self.active_user == self.player
 
@@ -195,13 +196,13 @@ class SampleGame(Game, State):
         nexts: List[SampleGame] = []
         for t in p_b:
             next: SampleGame = self.next(Timing.SELECT_BLOCKER, was_swich=True)
-            B: List[List[int]] = [[] for _ in range(self.tmp_attacker.__len__())]
+            B: List[List[Tuple[int, Creature]]] = [[] for _ in range(self.tmp_attacker.__len__())]
             for i in range(t.__len__()):
                 if t[i] == self.tmp_attacker.__len__():
                     continue
-                B[t[i]].append(creatures[i][0])
+                B[t[i]].append(creatures[i])
             for i in range(B.__len__()):
-                next.declare_blokers(i, B[i])
+                next.declare_blokers(i, get_keys_tuple_list(B[i]))
             next.next_params["blocker"] = B
             nexts.append(next)
         return nexts

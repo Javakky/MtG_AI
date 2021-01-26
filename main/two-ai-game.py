@@ -4,7 +4,6 @@ from typing import NoReturn
 from ai.expert import Expert
 from ai.montecalro.mcts_ai import MCTS_AI
 from ai.montecalro.mtg_config import MtGConfigBuilder
-from ai.reduced import Reduced
 from games.game import Game
 
 

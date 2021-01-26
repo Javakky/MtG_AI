@@ -2,7 +2,7 @@ import json
 import random
 import sys
 import time
-from typing import Tuple, Type, TypeVar, List, Optional
+from typing import Tuple, Type, TypeVar, List
 
 from ai.ai import AI
 from ai.expert import Expert
@@ -18,7 +18,8 @@ from util.log import write
 T = TypeVar("T", bound=AI)
 
 
-def main(opponent: Type[T], player_config: MtGConfig, opponent_config: MtGConfig, order: Tuple[List[Card], List[Card]], first: bool):
+def main(opponent: Type[T], player_config: MtGConfig, opponent_config: MtGConfig, order: Tuple[List[Card], List[Card]],
+         first: bool):
     sys.setrecursionlimit(10 ** 9)
     game: Game = Game()
     user1 = MCTS_AI(game, "ai_1", player_config)
@@ -140,6 +141,18 @@ def getConfig() -> Tuple[Type[T], MtGConfig, MtGConfig]:
             player_conf.set_binary_blocker(True)
         elif sys.argv[index] == "--opponent-binary-blocker":
             opponent_conf.set_binary_blocker(True)
+        elif sys.argv[index] == "--attacked-policy":
+            index += 1
+            player_conf.set_attacked_policy(get_ai_class(sys.argv[index]))
+        elif sys.argv[index] == "--blocked-policy":
+            index += 1
+            player_conf.set_blocked_policy(get_ai_class(sys.argv[index]))
+        elif sys.argv[index] == "--opponent-attacked-policy":
+            index += 1
+            opponent_conf.set_attacked_policy(get_ai_class(sys.argv[index]))
+        elif sys.argv[index] == "--opponent-blocked-policy":
+            index += 1
+            opponent_conf.set_blocked_policy(get_ai_class(sys.argv[index]))
         else:
             raise Exception("存在しないオプションです")
         index += 1
@@ -149,10 +162,11 @@ def getConfig() -> Tuple[Type[T], MtGConfig, MtGConfig]:
 
 if __name__ == '__main__':
     (opponent, player_config, opponent_config) = getConfig()
-    msg = opponent.__name__ + "\n" + json.dumps(vars(player_config), default=lambda x: x.__name__) + "\n" + json.dumps(vars(opponent_config), default=lambda x: x.__name__)
+    msg = opponent.__name__ + "\n" + json.dumps(vars(player_config), default=lambda x: x.__name__) + "\n" + json.dumps(
+        vars(opponent_config), default=lambda x: x.__name__)
     write("config_", msg, "")
     result = []
-    for j in range(5):
+    for j in range(1000):
         seed = time.time()
         random.seed(seed)
         winner = {"ai_1": 0, "ai_2": 0}
